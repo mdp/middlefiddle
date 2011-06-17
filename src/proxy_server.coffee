@@ -44,13 +44,15 @@ class ProxyServer extends connect.HTTPServer
       server_host = req.realHost
     else
       server_host = req.headers['host']
-    passed_opts = {method:req.method, path:req.url, host:server_host, headers:req.headers, port:80}
+    passed_opts = {method:req.method, path:req.url, host:server_host, headers:req.headers, port:req.port}
     upstream_request = http.request passed_opts, (upstream_res) ->
       upstream_res.on 'data', (chunk) ->
         res.write(chunk, 'binary')
       upstream_res.on 'end', ->
         res.end()
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
+    req.on 'data', (chunk) ->
+      upstream_request.write(chunk)
     upstream_request.end()
 
 
