@@ -1,0 +1,24 @@
+{ "name": "MiddleFiddle"
+, "description": "Fiddle and log all your outbound HTTP/HTTPS requests"
+, "author": "Mark Percival"
+, "version": "0.1.0"
+, "licenses": [
+  { "type": "MIT"
+  , "url": "https://github.com/mdp/middlefiddle/raw/master/LICENSE"
+  }]
+, "repository":
+  { "type": "git"
+  , "url": "https://github.com/mdp/middlefiddle.git"
+  }
+, "main": "./lib/index.js"
+, "dependencies":
+  {
+  }
+, "devDependencies":
+  { "nodeunit": ">=0.5.0"
+  , "coffee-script": ">=1.1.1"
+  }
+, "engines":
+  { "node": "~0.4"
+  }
+}
