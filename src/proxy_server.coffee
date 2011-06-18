@@ -1,6 +1,7 @@
 fs              = require "fs"
 sys             = require "sys"
 http            = require "http"
+https           = require "./https"
 url             = require "url"
 connect         = require "connect"
 
@@ -33,6 +34,7 @@ class ProxyServer extends connect.HTTPServer
     next()
 
   listenHTTPS: (port) ->
+    https.createProxy(port, this._connectionListener)
     return this
 
   listen: (port) ->
@@ -55,12 +57,3 @@ class ProxyServer extends connect.HTTPServer
       upstream_request.write(chunk)
     upstream_request.end()
 
-
-ProxyServer.logger = (regex) ->
-  regex ?= /.*/
-  (req, res, next) ->
-    if req.fullUrl.match(regex)
-      console.log(req.method + ": " + req.fullUrl)
-      next()
-    else
-      next()
