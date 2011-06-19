@@ -1,9 +1,9 @@
 fs              = require "fs"
 sys             = require "sys"
 http            = require "http"
-https           = require "./https"
 url             = require "url"
 connect         = require "connect"
+HttpsConnector  = require "./https_connector"
 
 safeParsePath = (proxyUrl) ->
   safeUrl = ''
@@ -34,7 +34,7 @@ class ProxyServer extends connect.HTTPServer
     next()
 
   listenHTTPS: (port) ->
-    https.createProxy(port, this._connectionListener)
+    new HttpsConnector(port, this)
     return this
 
   listen: (port) ->

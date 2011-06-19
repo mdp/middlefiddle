@@ -6,9 +6,9 @@ net = require('net')
 tls = require('tls')
 fs = require('fs')
 tls_options =
-  key: fs.readFileSync('middlefiddle.pem'),
-  cert: fs.readFileSync('middlefiddle-cert.pem'),
-  ca: fs.readFileSync('middlefiddle-cert.pem')
+  key: fs.readFileSync('certs/server.key'),
+  cert: fs.readFileSync('certs/server.crt'),
+  ca: fs.readFileSync('certs/ca.crt')
 
 tls_context = require('crypto').createCredentials(tls_options)
 tls_context.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
@@ -23,6 +23,9 @@ hijack_ssl = (headers, c, listener) ->
   pair = require('tls').createSecurePair(tls_context, true, false, false)
   cleartext = pipe(pair, c)
   cleartext.addListener 'data', listener
+
+module.exports = class HttpsConnector
+  constructor: (port, http) ->
 
 exports.createProxy = (port, listener) ->
   tlsServer = net.createServer (c) ->
