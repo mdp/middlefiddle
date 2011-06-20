@@ -4,7 +4,7 @@ http            = require "http"
 https           = require "https"
 url             = require "url"
 connect         = require "connect"
-HttpsConnector  = require "./https_connector"
+httpsConnector  = require "./https_connector"
 
 safeParsePath = (req) ->
 
@@ -44,7 +44,7 @@ class ProxyServer extends connect.HTTPServer
     next()
 
   listenHTTPS: (port) ->
-    new HttpsConnector(port, this)
+    httpsConnector.createProxy(port, this)
     return this
 
   listen: (port) ->
@@ -60,13 +60,17 @@ class ProxyServer extends connect.HTTPServer
     upstream_processor = (upstream_res) ->
       upstream_res.on 'data', (chunk) ->
         res.write(chunk, 'binary')
-      upstream_res.on 'end', ->
+      upstream_res.on 'end', (data)->
         res.end()
+      upstream_res.on 'close', ->
+        res.destroy()
       upstream_res.on 'error', ->
-        res.end()
+        res.abort()
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
     req.on 'data', (chunk) ->
       upstream_request.write(chunk)
+    req.on 'error', (error) -> 
+      console.log("ERROR: #{error}")
     if req.ssl
       upstream_request = https.request passed_opts, upstream_processor
     else

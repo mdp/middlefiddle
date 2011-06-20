@@ -7,57 +7,64 @@ net = require('net')
 tls = require('tls')
 http = require('http')
 fs = require('fs')
+spawn = require('child_process').spawn
 
-tlsContext = (host) ->
-  tlsOptions =
-    key: fs.readFileSync('certs/server.key'),
-    cert: fs.readFileSync('certs/server.crt'),
-    ca: fs.readFileSync('certs/ca.crt')
-  tlsSettings = require('crypto').createCredentials(tlsOptions)
-  tlsSettings.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
-  tlsSettings
 
-module.exports = class HttpsConnector extends tls.Server
-  constructor: (@port, @listener) ->
-    @createProxy(port, listener)
+exports.createProxy =  (port, listener) =>
+  self = this
+  tlsServer = net.createServer (c) ->
+    headers = ''
+    data = []
+    state = STATES.UNCONNECTED
+    c.addListener 'connect', ->
+      console.log("Connected to proxy")
+      state = STATES.CONNECTING
+    c.addListener 'data', (data) ->
+      if (state != STATES.CONNECTED)
+        headers += data.toString()
+        if headers.match("\r\n\r\n")
+          state = STATES.CONNECTED
+          if (headers.match(/^CONNECT/))
+            new HijackSsl(headers, c, listener)
+          else
+            console.log("Bad proxy call")
+            console.log("Sent: #{headers}")
+            c.end()
+      else
+        console.log("Proxying data")
+  tlsServer.listen(port)
 
-  createProxy: (port, listener) =>
-    self = this
-    tlsServer = net.createServer (c) ->
-      headers = ''
-      data = []
-      state = STATES.UNCONNECTED
-      c.addListener 'connect', ->
-        state = STATES.CONNECTING
-      c.addListener 'data', (data) =>
-        if (state != STATES.CONNECTED)
-          headers += data.toString()
-          if headers.match("\r\n\r\n")
-            state = STATES.CONNECTED
-            if (headers.match(/^CONNECT/))
-              self.hijackSsl(headers, c)
-            else
-              console.log("Bad proxy call")
-              console.log("Sent: #{headers}")
-              c.end()
-        else
-          # console.log("Proxying data")
-    tlsServer.listen(port)
+generateCerts = (host, callback) ->
+  prc = spawn "bin/certgen.sh", [host]
+  prc.on 'exit', (code) ->
+    console.log("Done with #{code}")
+    if code == 0
+      tlsOptions =
+        key: fs.readFileSync("certs/#{host}.key"),
+        cert: fs.readFileSync("certs/#{host}.crt"),
+        ca: fs.readFileSync('certs/ca.crt')
+      tlsSettings = require('crypto').createCredentials(tlsOptions)
+      tlsSettings.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
+      callback(tlsSettings)
 
-  hijackSsl: (headers, c) ->
+class HijackSsl extends http.Server
+  constructor: (headers, c, @listener) ->
     match = headers.match("CONNECT +([^:]+):([0-9]+).*")
     host = match[1]
     port = match[2]
-    console.log("Hijacking HTTPS")
-    console.log("Host:" + host + "\nPort:" + port)
-    c.write("HTTP/1.0 200 Connection established\r\n\r\n")
-    pair = require('tls').createSecurePair(tlsContext(), true, false, false)
-    cleartext = pipe(pair, c)
-    this.addListener 'request', @wrappedHandle
-    http._connectionListener.call(this, cleartext)
+    generateCerts host, (tlsContext) =>
+      c.write("HTTP/1.0 200 Connection established\r\nProxy-agent: MiddleFiddle\r\n\r\n")
+      console.log("Sent 200 Proxy response")
+      pair = require('tls').createSecurePair(tlsContext, true, false, false)
+      cleartext = pipe(pair, c)
+      cleartext.on 'data', (data) ->
+        console.log data.toString()
+      http._connectionListener.call(this, cleartext)
+      this.addListener 'request', @wrappedHandle
 
   wrappedHandle: (req, res, out) ->
     # Ugh
+    console.log("wrapping it")
     @listener.handle.call(@listener, req, res, out)
 
 
