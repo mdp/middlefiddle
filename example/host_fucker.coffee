@@ -1,4 +1,5 @@
 Mf = require '../lib/index'
+Connect = require 'connect'
 
 hostFucker = (origHost,host) ->
   (req, res, next) ->
@@ -8,4 +9,4 @@ hostFucker = (origHost,host) ->
     return next()
 
 
-Mf.createProxy(Mf.logger()).listen(8080).listenHTTPS(8081)
+Mf.createProxy(Connect.logger()).listen(8088).listenHTTPS(8089)

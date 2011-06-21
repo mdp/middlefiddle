@@ -75,5 +75,8 @@ class ProxyServer extends connect.HTTPServer
       upstream_request = https.request passed_opts, upstream_processor
     else
       upstream_request = http.request passed_opts, upstream_processor
+    upstream_request.on 'error', ->
+      console.log("Fail")
+      res.end()
     upstream_request.end()
 
