@@ -1,4 +1,5 @@
-exports.createProxy =      require "./proxy_server"
+exports.createProxy      =    require("./http_proxy").createProxy
+exports.createHttpsProxy =    require("./https_proxy").createProxy
 
 middlewares =              require './middlewares'
 for property of middlewares

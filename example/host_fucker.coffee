@@ -9,4 +9,5 @@ hostFucker = (origHost,host) ->
     return next()
 
 
-Mf.createProxy(Connect.logger()).listen(8088).listenHTTPS(8089)
+Mf.createProxy(Connect.logger()).listen(8088)
+Mf.createHttpsProxy(Connect.logger()).listen(8089)

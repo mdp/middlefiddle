@@ -4,7 +4,6 @@ http            = require "http"
 https           = require "https"
 url             = require "url"
 connect         = require "connect"
-httpsConnector  = require "./https_connector"
 
 safeParsePath = (req) ->
 
@@ -14,11 +13,11 @@ isSecure = (req) ->
   else
     false
 
-module.exports = (middlewares...) ->
-  proxy = new ProxyServer(middlewares)
+exports.createProxy = (middlewares...) ->
+  proxy = new HttpProxy(middlewares)
   return proxy
 
-class ProxyServer extends connect.HTTPServer
+exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
   # Shamelessly pilfered from POW
   o = (fn) -> (req, res, next)      -> fn req, res, next
@@ -44,7 +43,6 @@ class ProxyServer extends connect.HTTPServer
     next()
 
   listenHTTPS: (port) ->
-    httpsConnector.createProxy(port, this)
     return this
 
   listen: (port) ->
