@@ -1,5 +1,5 @@
 STATES =
-  UNCONNECTED: 0
+  UNCONNECTED: 0,
   CONNECTING : 1,
   CONNECTED : 2
 
@@ -24,20 +24,17 @@ exports.HttpsProxy = class HttpsProxy extends HttpProxy
     super middlewares
 
   hijackSsl: (headers, c) ->
-    self = this
     match = headers.match("CONNECT +([^:]+):([0-9]+).*")
     host = match[1]
     port = match[2]
     generateCerts host, (tlsContext) =>
       pair = tls.createSecurePair(tlsContext, true, false, false)
-      cleartext = pipe(pair, c)
-      cleartext.on 'data', (data) ->
-        console.log data.toString()
       httpServer = new http.Server
-      httpServer.addListener.call this, 'request', self.handle
-      http._connectionListener.call(httpServer, cleartext)
+      httpServer.addListener 'request', @handle
+      cleartext = pipe(pair, c)
+      http._connectionListener.call(this, cleartext)
+      @httpAllowHalfOpen = false;
       c.write("HTTP/1.0 200 Connection established\r\nProxy-agent: MiddleFiddle\r\n\r\n")
-      console.log("Sent 200 Proxy response")
 
   listen: (port) ->
     self = this
@@ -46,7 +43,6 @@ exports.HttpsProxy = class HttpsProxy extends HttpProxy
       data = []
       state = STATES.UNCONNECTED
       c.addListener 'connect', ->
-        console.log("Connected to proxy")
         state = STATES.CONNECTING
       c.addListener 'data', (data) ->
         if (state != STATES.CONNECTED)
@@ -64,15 +60,31 @@ exports.HttpsProxy = class HttpsProxy extends HttpProxy
     tlsServer.listen(port)
 
 badCerts = () ->
+  console.log('bad certs')
   tlsOptions =
-    key: fs.readFileSync("certs/default.key"),
-    cert: fs.readFileSync("certs/default.crt"),
+    key: fs.readFileSync("certs/ca.key"),
+    cert: fs.readFileSync("certs/ca.crt"),
     ca: fs.readFileSync('certs/ca.crt')
 
   tlsSettings = require('crypto').createCredentials(tlsOptions)
   tlsSettings.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
+  return tlsSettings
 
 generateCerts = (host, callback) ->
+  currentCerts = getCerts(host)
+  if currentCerts
+    callback(currentCerts)
+  else
+    prc = spawn "bin/certgen.sh", [host]
+    prc.on 'exit', (code, err) ->
+      if code == 0
+        console.log("Generated new certs for #{host}")
+        callback getCerts(host)
+      else
+        console.log(err)
+        callback badCerts()
+
+getCerts = (host) ->
   if path.existsSync("certs/#{host}.key") && path.existsSync("certs/#{host}.crt")
     tlsOptions =
       key: fs.readFileSync("certs/#{host}.key"),
@@ -80,15 +92,9 @@ generateCerts = (host, callback) ->
       ca: fs.readFileSync('certs/ca.crt')
     tlsSettings = require('crypto').createCredentials(tlsOptions)
     tlsSettings.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
-    callback(tlsSettings)
+    tlsSettings
   else
-    prc = spawn "bin/certgen.sh", [host]
-    prc.on 'exit', (code, err) ->
-      if code == 0
-        console.log("Generated new certs for #{host}")
-      else
-        console.log(err)
-    callback(badCerts())
+    return false
 
 pipe = (pair, socket) ->
   pair.encrypted.pipe(socket)
