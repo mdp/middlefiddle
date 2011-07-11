@@ -19,10 +19,6 @@ exports.createProxy = (middlewares...) ->
 
 exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
-  # Shamelessly pilfered from POW
-  o = (fn) -> (req, res, next)      -> fn req, res, next
-  x = (fn) -> (err, req, res, next) -> fn err, req, res, next
-
   constructor: (middlewares) ->
     middlewares ?= []
     middlewares.unshift(@proxyCleanup)

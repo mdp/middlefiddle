@@ -1,7 +1,7 @@
 #!/bin/sh
 
-
 current=`dirname $0`
+serial=`date +%s`
 dir="$current/../certs"
 ca_key_file="$dir/ca.key"
 ca_crt_file="$dir/ca.crt"
@@ -19,6 +19,6 @@ if [ ! -e $cert_key_file ]; then
   openssl genrsa -out $cert_key_file 1024
   openssl req -new -key $cert_key_file -out $cert_csr_file -subj "/C=US/ST=CA/L=SF/O=MiddleFiddle/OU=STFU/CN=$1"
   # Sign with the CA
-  openssl x509 -req -days 365 -in $cert_csr_file -CA $ca_crt_file -CAkey $ca_key_file -set_serial 01 -out $cert_crt_file
+  openssl x509 -req -days 365 -in $cert_csr_file -CA $ca_crt_file -CAkey $ca_key_file -set_serial $serial -out $cert_crt_file
 fi
 
