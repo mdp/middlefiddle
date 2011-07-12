@@ -11,7 +11,7 @@ fs = require('fs')
 path = require('path')
 spawn = require('child_process').spawn
 
-exports.createProxy = (middlewares...) ->
+exports.createProxy = (middlewares) ->
   proxy = new HttpsProxy(middlewares)
   return proxy
 

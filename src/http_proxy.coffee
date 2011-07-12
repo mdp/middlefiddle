@@ -19,11 +19,14 @@ exports.createProxy = (middlewares...) ->
 
 exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
-  constructor: (middlewares) ->
-    middlewares ?= []
-    middlewares.unshift(@proxyCleanup)
-    middlewares.push(@outboundProxy)
-    super middlewares
+  constructor: (@middlewares) ->
+    @middlewares ?= []
+    super @bookendedMiddleware()
+
+  bookendedMiddleware: ->
+    @middlewares.unshift(@proxyCleanup)
+    @middlewares.push(@outboundProxy)
+    @middlewares
 
   proxyCleanup: (req, res, next) ->
     if isSecure(req)
@@ -39,7 +42,8 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     next()
 
   listenHTTPS: (port) ->
-    return this
+    httpsProxy = require './https_proxy'
+    httpsProxy.createProxy(@bookendedMiddleware()).listen(port)
 
   listen: (port) ->
     super port
@@ -63,7 +67,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
     req.on 'data', (chunk) ->
       upstream_request.write(chunk)
-    req.on 'error', (error) -> 
+    req.on 'error', (error) ->
       console.log("ERROR: #{error}")
     if req.ssl
       upstream_request = https.request passed_opts, upstream_processor
