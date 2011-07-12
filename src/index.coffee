@@ -1,7 +1,11 @@
-exports.createProxy =      require "./proxy_server"
+fs = require 'fs'
 
-middlewares =              require './middlewares'
-for property of middlewares
-  console.log(property)
-  if (middlewares.hasOwnProperty(property))
-    module.exports[property] = middlewares[property]
+exports.createProxy      =    require("./http_proxy").createProxy
+exports.createHttpsProxy =    require("./https_proxy").createProxy
+
+fs.readdirSync(__dirname + '/middleware').forEach (filename) ->
+  if (/\.js$/.test(filename))
+    name = filename.substr(0, filename.lastIndexOf('.'))
+    exports.__defineGetter__ name, ->
+      return require('./middleware/' + name)
+
