@@ -59,17 +59,6 @@ exports.HttpsProxy = class HttpsProxy extends HttpProxy
           # Proxying data
     tlsServer.listen(port)
 
-badCerts = () ->
-  console.log('bad certs')
-  tlsOptions =
-    key: fs.readFileSync("certs/ca.key"),
-    cert: fs.readFileSync("certs/ca.crt"),
-    ca: fs.readFileSync('certs/ca.crt')
-
-  tlsSettings = require('crypto').createCredentials(tlsOptions)
-  tlsSettings.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
-  return tlsSettings
-
 generateCerts = (host, callback) ->
   currentCerts = getCerts(host)
   if currentCerts
@@ -82,14 +71,15 @@ generateCerts = (host, callback) ->
         callback getCerts(host)
       else
         console.log(err)
-        callback badCerts()
+        callback getCerts(host)
 
+CERTS_DIR = "#{process.env['HOME']}/.middlefiddle/certs"
 getCerts = (host) ->
-  if path.existsSync("certs/#{host}.key") && path.existsSync("certs/#{host}.crt")
+  if path.existsSync("#{CERTS_DIR}/#{host}.key") && path.existsSync("#{CERTS_DIR}/#{host}.crt")
     tlsOptions =
-      key: fs.readFileSync("certs/#{host}.key"),
-      cert: fs.readFileSync("certs/#{host}.crt"),
-      ca: fs.readFileSync('certs/ca.crt')
+      key: fs.readFileSync("#{CERTS_DIR}/#{host}.key"),
+      cert: fs.readFileSync("#{CERTS_DIR}/#{host}.crt"),
+      ca: fs.readFileSync("#{CERTS_DIR}/../ca.crt")
     tlsSettings = require('crypto').createCredentials(tlsOptions)
     tlsSettings.context.setCiphers('RC4-SHA:AES128-SHA:AES256-SHA')
     tlsSettings
