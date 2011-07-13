@@ -1,7 +1,5 @@
 # MiddleFiddle
 
-### What is MiddleFiddle
-
 MiddleFiddle is an outbound local proxy which lets to modify your outbound request and responses
 via Connect middleware. It support HTTP and HTTPS, the latter through a hijacking of the request
 with locally generated SSL certs.
