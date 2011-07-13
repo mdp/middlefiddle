@@ -17,8 +17,8 @@ with locally generated SSL certs.
 Changes your outbound user-agent depending on the URL
 
     var Mf = require('middlefiddle');
-    var googleBotUA = "Googlebot/2.1 (+http://www.google.com/bot.html)"
-    Mf.createProxy(Mf.logger(), Mf.user_agent(googleBotUA, /wsj\.com/)).listen(8088).listenHTTPS(8089);
+    var iPhoneUA = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3"
+    Mf.createProxy(Mf.logger(), Mf.user_agent(iPhoneUA, /google\.com/)).listen(8088).listenHTTPS(8089);
 
 #### Streaming MP3 recorder
 
