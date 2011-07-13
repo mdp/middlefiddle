@@ -9,13 +9,11 @@ exports = module.exports = (options) ->
       return next()
 
     req._logging = true
-
     end = res.end
     res.end = (chunk, encoding) ->
       res.end = end;
       res.end(chunk, encoding)
       stream.write(fmt(req, res) + '\n', 'ascii')
-
     next()
 
 fmt = (req, res) ->

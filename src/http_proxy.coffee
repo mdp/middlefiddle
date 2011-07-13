@@ -56,15 +56,23 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       server_host = req.headers['host']
     passed_opts = {method:req.method, path:req.url, host:server_host, headers:req.headers, port:req.port}
     upstream_processor = (upstream_res) ->
+      # Helpers for easier logging upstream
+      res.statusCode = upstream_res.statusCode
+      res.headers = upstream_res.headers
+
+      res.writeHead(upstream_res.statusCode, upstream_res.headers)
       upstream_res.on 'data', (chunk) ->
+        res.emit 'data', chunk
         res.write(chunk, 'binary')
       upstream_res.on 'end', (data)->
-        res.end()
+        res.emit 'end', data
+        res.end(data)
       upstream_res.on 'close', ->
+        res.emit 'close'
         res.destroy()
       upstream_res.on 'error', ->
+        res.emit 'end'
         res.abort()
-      res.writeHead(upstream_res.statusCode, upstream_res.headers)
     req.on 'data', (chunk) ->
       upstream_request.write(chunk)
     req.on 'error', (error) ->
@@ -72,7 +80,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     if req.ssl
       upstream_request = https.request passed_opts, upstream_processor
     else
-      upstream_request = http.request passed_opts, upstream_processor
+    upstream_request = http.request passed_opts, upstream_processor
     upstream_request.on 'error', ->
       console.log("Fail")
       res.end()

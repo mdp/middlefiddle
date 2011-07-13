@@ -64,7 +64,7 @@ generateCerts = (host, callback) ->
   if currentCerts
     callback(currentCerts)
   else
-    prc = spawn "bin/certgen.sh", [host]
+    prc = spawn "#{__dirname}/bin/certgen.sh", [host]
     prc.on 'exit', (code, err) ->
       if code == 0
         console.log("Generated new certs for #{host}")
