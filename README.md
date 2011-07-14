@@ -18,7 +18,7 @@ Changes your outbound user-agent depending on the URL
     var iPhoneUA = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3"
     Mf.createProxy(Mf.logger(), Mf.user_agent(iPhoneUA, /google\.com/)).listen(8088).listenHTTPS(8089);
 
-### Add headers to a response
+#### Add headers to a response
 
     var Mf = require('middlefiddle');
     var url = require('url');
