@@ -21,8 +21,6 @@ Changes your outbound user-agent depending on the URL
 #### Add headers to a response
 
     var Mf = require('middlefiddle');
-    var url = require('url');
-    var fs = require('fs');
 
     var addCSP = function(urlRegex) {
       return function(req, res, next){

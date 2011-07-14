@@ -1,7 +1,4 @@
 var Mf = require('../lib/index');
-var url = require('url');
-var fs = require('fs');
-
 
 var addCSP = function(urlRegex) {
   return function(req, res, next){
