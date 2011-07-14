@@ -1,18 +1,24 @@
 # MiddleFiddle
 
-*This project is still pretty beta, expect changes*
-
-### What is MiddleFiddle
-
 MiddleFiddle is an outbound local proxy which lets to modify your outbound request and responses
-via Connect middleware. It support HTTP and HTTPS, the latter through a hijacking of the request
-with locally generated SSL certs.
+via [Connect](http://senchalabs.github.com/connect/) middleware. It support HTTP and HTTPS, the
+latter through a hijacking of the request with locally generated SSL certs.
 
 ### Installation
 
     npm install middlefiddle
 
 ### Example
+
+#### Change your user agent
+
+Changes your outbound user-agent depending on the URL
+
+    var Mf = require('middlefiddle');
+    var iPhoneUA = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3"
+    Mf.createProxy(Mf.logger(), Mf.user_agent(iPhoneUA, /google\.com/)).listen(8088).listenHTTPS(8089);
+
+#### Streaming MP3 recorder
 
 Grab any mp3 downloaded or streamed to your browser:
 
@@ -63,20 +69,20 @@ middlefiddle emits events on the response along with writing to the stream.
 
 You've also got a couple helper properties:
 
-req.fullUrl #=> The full requested URL, including the schema
-req.isSecure #=> Did it come via SSL?
+- req.fullUrl #=> The full requested URL, including the schema
+- req.isSecure #=> Did it come via SSL?
 
 ### TODO
 
 - Clean up HTTPS cert generation. Right now 3 parrallel request to the same domain cause a race condition.
   This only happens the first time you visit a site, but it's hacky.
-
 - Expand logging
+- Add more middleware
 
 ### Want to contribute
 
-This is my first node project, so please excuse the poor coding. If you have any suggestions,
-feel free to address them in a pull request.
+This is my first node project, criticism is gladly accepted as long as it's in
+the form of a pull request.
 
 ### Development
 
