@@ -1,13 +1,14 @@
 {
   "name": "middlefiddle",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Middleware as a proxy for HTTP/HTTPS traffic",
   "keywords": ["proxy", "middleware", "connect"],
   "repository": "git://github.com/mdp/middlefiddle.git",
   "author": "Mark Percival <mark@markpercival.us> (http://markpercival.us)",
   "repository": "git://github.com/mdp/middlefiddle",
   "dependencies": {
-    "connect": ">=1.0.0"
+    "connect": ">=1.0.0",
+    "chain-gang": ">=1.0.0"
   },
   "main": "./lib/index.js",
   "engines": { "node": ">= 0.4.1 < 0.5.0" }
