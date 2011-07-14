@@ -8,7 +8,7 @@ latter through a hijacking of the request with locally generated SSL certs.
 
     npm install middlefiddle
 
-### Example
+### Examples
 
 #### Change your user agent
 
@@ -17,6 +17,29 @@ Changes your outbound user-agent depending on the URL
     var Mf = require('middlefiddle');
     var iPhoneUA = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3"
     Mf.createProxy(Mf.logger(), Mf.user_agent(iPhoneUA, /google\.com/)).listen(8088).listenHTTPS(8089);
+
+### Add headers to a response
+
+    var Mf = require('middlefiddle');
+    var url = require('url');
+    var fs = require('fs');
+
+    var addCSP = function(urlRegex) {
+      return function(req, res, next){
+        if (req.fullUrl.match(urlRegex)) {
+          var writeHead = res.writeHead;
+          res.writeHead = function(){
+            var headers = arguments[arguments.length-1];
+            var statusCode = arguments[0];
+            headers['x-content-security-policy'] = "allow 'self'";
+            writeHead.call(res, statusCode, headers);
+          };
+        }
+        next();
+      };
+    };
+
+    Mf.createProxy(addCSP(/google.com/)).listen(8088).listenHTTPS(8089);
 
 #### Streaming MP3 recorder
 
@@ -74,8 +97,6 @@ You've also got a couple helper properties:
 
 ### TODO
 
-- Clean up HTTPS cert generation. Right now 3 parrallel request to the same domain cause a race condition.
-  This only happens the first time you visit a site, but it's hacky.
 - Expand logging
 - Add more middleware
 
