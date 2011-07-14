@@ -97,6 +97,7 @@ You've also got a couple helper properties:
 
 ### TODO
 
+- Clean up cert generation
 - Expand logging
 - Add more middleware
 
