@@ -12,5 +12,5 @@ fs.readdirSync(__dirname + '/middleware').forEach (filename) ->
 # HTTPS DNS lookup errors throw an exception which
 # it difficult to catch
 process.on 'uncaughtException', (err)->
-  console.log(err["message"])
+  console.log(err)
 

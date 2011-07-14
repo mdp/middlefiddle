@@ -43,7 +43,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
   listenHTTPS: (port) ->
     httpsProxy = require './https_proxy'
-    httpsProxy.createProxy(@bookendedMiddleware()).listen(port)
+    httpsProxy.createProxy(@middlewares).listen(port)
 
   listen: (port) ->
     super port
@@ -69,7 +69,6 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         res.end(data)
       upstream_res.on 'close', ->
         res.emit 'close'
-        res.destroy()
       upstream_res.on 'error', ->
         res.emit 'end'
         res.abort()
@@ -80,7 +79,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     if req.ssl
       upstream_request = https.request passed_opts, upstream_processor
     else
-    upstream_request = http.request passed_opts, upstream_processor
+      upstream_request = http.request passed_opts, upstream_processor
     upstream_request.on 'error', ->
       console.log("Fail")
       res.end()
