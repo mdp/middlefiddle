@@ -11,7 +11,7 @@ fs        = require('fs')
 path      = require('path')
 spawn     = require('child_process').spawn
 chainGang = require('chain-gang')
-chain     = chainGang.create({workers: 4})
+chain     = chainGang.create({workers: 1})
 
 exports.createProxy = (middlewares) ->
   proxy = new HttpsProxy(middlewares)
@@ -68,7 +68,7 @@ generateCerts = (host, callback) ->
     callback(currentCerts)
   else
     console.log("Generating certs for #{host}")
-    prc = spawn "#{__dirname}/bin/certgen.sh", [host]
+    prc = spawn "#{__dirname}/bin/certgen.sh", [host, Date.now()]
     prc.on 'exit', (code, err) ->
       if code == 0
         callback getCerts(host)

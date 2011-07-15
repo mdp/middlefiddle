@@ -1,7 +1,7 @@
 #!/bin/sh
 
 dir=$HOME/.middlefiddle
-serial=`date +%s`
+serial=$2
 cert_dir="$dir/certs"
 ca_key_file="$dir/ca.key"
 ca_crt_file="$dir/ca.crt"
