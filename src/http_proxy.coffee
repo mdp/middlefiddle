@@ -51,10 +51,13 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
   outboundProxy: (req, res, next) ->
     if (req.realHost?)
-      server_host = req.realHost
+      server_host_port = req.realHost
     else
-      server_host = req.headers['host']
-    passed_opts = {method:req.method, path:req.url, host:server_host, headers:req.headers, port:req.port}
+      server_host_port = req.headers['host']
+    tmp = server_host_port.split(':')
+    server_host = tmp[0]
+    server_port = if tmp.length > 1 then tmp[1] else 80
+    passed_opts = {method:req.method, path:req.url, host:server_host, headers:req.headers, port:server_port}
     upstream_processor = (upstream_res) ->
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
