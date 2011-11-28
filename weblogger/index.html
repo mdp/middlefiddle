@@ -1,0 +1,59 @@
+<html>
+  <head>
+    <title>Request Logger</title>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/reset.css">
+    <script src="/json2.js"></script>
+    <script src="/jquery.min.js"></script>
+    <script src="/underscore-min.js"></script>
+    <script src="/backbone-min.js"></script>
+    <script src="/jquery.mustache.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/app.js"></script>
+    <link rel="stylesheet" type="text/css" href="/stylesheets/default.css">
+    <script id="request-item" type="text/x-jquery-tmpl"> 
+      <div class='line'>
+        <div class='method'>{{method}}</div>
+        <div class='url'>{{url}}</div>
+        <div class='status'>{{status}}</div>
+      </div>
+      <div class='subline'>
+        <div class='time'>{{time}} ms</div>
+        <div class='time'>{{length}} bytes</div>
+      </div>
+    </script>
+    <script id="requestDetailTemplate" type="text/x-jquery-tmpl"> 
+      <div id='request'>
+        {{#request}}
+        <div class='header'>
+          <h1>Request - {{method}}</h1>
+        </div>
+        <ul>
+          {{#headers}}
+          <li>{{.}}</li>
+          {{/headers}}
+        </ul>
+        {{/request}}
+        {{#response}}
+        <div class='header'>
+          <h1>Response - {{status}}</h1>
+        </div>
+        <ul>
+          {{#headers}}
+          <li>{{.}}</li>
+          {{/headers}}
+        </ul>
+        <h2>Content</h2>
+        <pre>{{content}}</pre>
+        {{/response}}
+      </div>
+    </script>
+  </head>
+  <body>
+    <div id='list-view'>
+      <ul id="requests"></ul>
+      <div id='scroll-btn'>⇊</div>
+    </div>
+    <div id='detail-view'>
+    </div>
+  </body>
+</html>

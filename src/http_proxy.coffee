@@ -1,5 +1,3 @@
-fs              = require "fs"
-sys             = require "sys"
 http            = require "http"
 https           = require "https"
 url             = require "url"
@@ -9,6 +7,8 @@ safeParsePath = (req) ->
 
 isSecure = (req) ->
   if req.client && req.client.pair
+    true
+  else if req.forceSsl
     true
   else
     false
@@ -51,6 +51,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
   outboundProxy: (req, res, next) ->
     if (req.realHost?)
+      # realHost lets us alter the original destination
       server_host_port = req.realHost
     else
       server_host_port = req.headers['host']

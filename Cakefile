@@ -30,7 +30,15 @@ task 'watch', 'Recompile CoffeeScript source files when modified', ->
 
 task 'test', 'Run the test suite', ->
   build ->
-    require.paths.unshift __dirname + "/lib"
     {reporters} = require 'nodeunit'
     process.chdir __dirname
-    reporters.default.run ['test']
+    if specificFile = process.env["TEST"]
+      files = [specificFile]
+    else
+      files = fs.readdirSync('test')
+      files = (file for file in files when file.match(/_test\.coffee/))
+      files = for file in files
+        "test/#{file}"
+    fakeServer = require './test/fake_server'
+    fakeServer.startServer ->
+      reporters.default.run files
