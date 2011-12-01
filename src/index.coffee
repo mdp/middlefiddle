@@ -2,6 +2,7 @@ fs = require 'fs'
 
 exports.createProxy      =    require("./http_proxy").createProxy
 exports.createHttpsProxy =    require("./https_proxy").createProxy
+exports.config =    require("./config")
 
 fs.readdirSync(__dirname + '/middleware').forEach (filename) ->
   if (/\.js$/.test(filename))

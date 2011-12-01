@@ -1,8 +1,9 @@
 fs        = require('fs')
 path      = require('path')
-{spawn}     = require('child_process')
+{spawn}   = require('child_process')
 chainGang = require('chain-gang')
 chain     = chainGang.create({workers: 1})
+log       = require './logger'
 
 generateCerts = (host, callback) ->
   # TODO: Make async
@@ -10,13 +11,13 @@ generateCerts = (host, callback) ->
   if currentCerts
     callback(currentCerts)
   else
-    console.log("Generating certs for #{host}")
+    log.info("Generating certs for #{host}")
     prc = spawn "#{__dirname}/bin/certgen.sh", [host, Date.now()]
     prc.on 'exit', (code, err) ->
       if code == 0
         callback getCerts(host)
       else
-        console.log(err)
+        log.error(err)
         callback getCerts(host)
 
 CERTS_DIR = "#{process.env['HOME']}/.middlefiddle/certs"
@@ -40,7 +41,7 @@ exports.build = (host, tlsCallback) ->
   if tlsSettings = getCerts(host)
     tlsCallback(tlsSettings)
   else
-    console.log("Queuing up cert gen")
+    log.debug("Queuing up cert gen")
     callback = (err)->
       tlsCallback(getCerts(host))
     job = (host)->

@@ -3,6 +3,7 @@ tls       = require('tls')
 http      = require('http')
 {HttpProxy} = require('./http_proxy')
 certGenerator = require('./cert_generator')
+log = require("./logger")
 
 STATES =
   UNCONNECTED: 0,
@@ -50,8 +51,8 @@ exports.HttpsProxy = class HttpsProxy extends HttpProxy
             if (headers.match(/^CONNECT/))
               self.hijackSsl(headers, c)
             else
-              console.log("Bad proxy call")
-              console.log("Sent: #{headers}")
+              log.warn("Bad proxy call")
+              log.debug("Sent: #{headers}")
               c.end()
         else
           # Proxying data

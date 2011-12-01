@@ -2,6 +2,9 @@ zlib = require 'zlib'
 express = require('express')
 io = require('socket.io')
 ringBuffer = require('../utils/ringbuffer').create(1000)
+log = require '../logger'
+requestFilter = require '../request_filter'
+config = require '../config'
 currentSocket = null
 
 logContentEnabled = (res) ->
@@ -10,8 +13,7 @@ logContentEnabled = (res) ->
 
 createServer = (callback) ->
   app = express.createServer()
-  io = io.listen(app)
-  io.set('log level', 0)
+  io = io.listen(app, {"log level": 0})
   app.configure ->
     app.use express.static(__dirname + '/../../weblogger/public')
 
@@ -20,8 +22,8 @@ createServer = (callback) ->
     res.send index.toString(), 200
 
   app.get '/:key', (req, res) ->
-    log = ringBuffer.retrieve(req.params.key)
-    if log
+    requestLog = ringBuffer.retrieve(req.params.key)
+    if requestLog
       res.send JSON.stringify(ringBuffer.retrieve(req.params.key)), 200
     else
       res.send "Not Found", 404
@@ -29,15 +31,16 @@ createServer = (callback) ->
   io.sockets.on 'connection', (socket) ->
     currentSocket = socket
 
-  app.listen(8411)
+  app.listen(config.liveLoggerPort)
 
-exports = module.exports = (options) ->
-  console.log('Starting server')
+exports = module.exports = (filter) ->
+  log.info ("Starting LiveLogger on #{config.liveLoggerPort}")
   createServer()
-  options ||= {}
-  stream = options.stream || process.stdout
 
   return (req, res, next) ->
+    if !requestFilter.matches(filter, req)
+      return next()
+
     req._startTime = new Date
     res._length = 0
     res._content = ''
@@ -52,17 +55,17 @@ exports = module.exports = (options) ->
       res._content += data.toString('binary')
     res.end = ->
       res.end = end;
-      log(req, res)
+      weblog(req, res)
       res.end()
     next()
 
-log = (req, res) ->
+weblog = (req, res) ->
   logger = (req, res)->
     res._logKey = ringBuffer.add(longFormat(req, res))
     if currentSocket
       currentSocket.emit 'request', { request: shortFormat(req, res) }
       currentSocket.broadcast.emit 'request', { request: shortFormat(req, res) }
-  if res.headers['content-encoding'] && res.headers['content-encoding'].match(/gzip/)
+  if res.headers && res.headers['content-encoding'] && res.headers['content-encoding'].match(/gzip/)
     zlib.unzip new Buffer(res._content, 'binary'), (err, buffer)->
       res._content = buffer.toString('utf-8')
       logger(req, res)

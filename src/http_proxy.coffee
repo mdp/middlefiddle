@@ -2,6 +2,7 @@ http            = require "http"
 https           = require "https"
 url             = require "url"
 connect         = require "connect"
+log             = require "./logger"
 
 safeParsePath = (req) ->
 
@@ -29,6 +30,22 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     @middlewares
 
   proxyCleanup: (req, res, next) ->
+    if (req.realHost?)
+      # Set request.realHost to alter the request destination destination
+      log.debug("Overriding outbound host to:" + req.realHost)
+      req._host = req.realHost
+    else
+      req._host = req.headers['host'].split(":")[0]
+
+    # Dertermine outbound port
+    # Sometime https proxy clients do not explicitly set the port to 443
+    serverPort = req._host.split(":")[1]
+    if serverPort?
+      req._port = serverPort
+    else if req.ssl
+      req._port = 443
+    else
+      req._port = 80
     if isSecure(req)
       req.fullUrl = "https://" + req.headers['host'] + req.url
       req.ssl = true
@@ -50,15 +67,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     return this
 
   outboundProxy: (req, res, next) ->
-    if (req.realHost?)
-      # realHost lets us alter the original destination
-      server_host_port = req.realHost
-    else
-      server_host_port = req.headers['host']
-    tmp = server_host_port.split(':')
-    server_host = tmp[0]
-    server_port = if tmp.length > 1 then tmp[1] else 80
-    passed_opts = {method:req.method, path:req.url, host:server_host, headers:req.headers, port:server_port}
+    passed_opts = {method:req.method, path:req.url, host:req._host, headers:req.headers, port:req._port}
     upstream_processor = (upstream_res) ->
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
@@ -79,13 +88,13 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     req.on 'data', (chunk) ->
       upstream_request.write(chunk)
     req.on 'error', (error) ->
-      console.log("ERROR: #{error}")
+      log.error("ERROR: #{error}")
     if req.ssl
       upstream_request = https.request passed_opts, upstream_processor
     else
       upstream_request = http.request passed_opts, upstream_processor
-    upstream_request.on 'error', ->
-      console.log("Fail")
+    upstream_request.on 'error', (err)->
+      log.error("Fail - #{req.method} - #{req.fullUrl}")
       res.end()
     upstream_request.end()
 
