@@ -10,6 +10,7 @@ generateCerts = (host, callback) ->
   # TODO: Make async
   currentCerts = getCerts(host)
   if currentCerts
+    log.debug("Found existing certs for #{host}")
     callback(currentCerts)
   else
     log.info("Generating certs for #{host}")
