@@ -8,9 +8,12 @@
   "repository": "git://github.com/mdp/middlefiddle",
   "dependencies": {
     "connect": ">=1.0.0",
+    "coffee-script": ">=1.1.3",
     "underscore": ">=1.2.2",
     "colors": ">=0.5.1",
-    "chain-gang": "1.0.0-beta4"
+    "chain-gang": "1.0.0-beta4",
+    "express": ">=2.5.1",
+    "socket.io": ">=0.8.7"
   },
 
   "bin": {
