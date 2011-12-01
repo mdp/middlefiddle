@@ -4,6 +4,7 @@ path      = require('path')
 chainGang = require('chain-gang')
 chain     = chainGang.create({workers: 1})
 log       = require './logger'
+config       = require './config'
 
 generateCerts = (host, callback) ->
   # TODO: Make async
@@ -12,7 +13,7 @@ generateCerts = (host, callback) ->
     callback(currentCerts)
   else
     log.info("Generating certs for #{host}")
-    prc = spawn "#{__dirname}/bin/certgen.sh", [host, Date.now()]
+    prc = spawn "#{__dirname}/bin/certgen.sh", [host, Date.now(), config.mfDir]
     prc.on 'exit', (code, err) ->
       if code == 0
         callback getCerts(host)
@@ -20,7 +21,7 @@ generateCerts = (host, callback) ->
         log.error(err)
         callback getCerts(host)
 
-CERTS_DIR = "#{process.env['HOME']}/.middlefiddle/certs"
+CERTS_DIR = "#{config.mfDir}/certs"
 getCerts = (host) ->
   if path.existsSync("#{CERTS_DIR}/#{host}.key") && path.existsSync("#{CERTS_DIR}/#{host}.crt")
     tlsOptions =

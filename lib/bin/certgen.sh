@@ -1,6 +1,6 @@
 #!/bin/sh
 
-dir=$HOME/.middlefiddle
+dir=$3
 serial=$2
 cert_dir="$dir/certs"
 ca_key_file="$dir/ca.key"

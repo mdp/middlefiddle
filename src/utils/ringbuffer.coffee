@@ -1,9 +1,11 @@
 class Ringbuffer
   constructor: (@size)->
     @items = []
+    @count = 0
 
   add: (item) ->
-    index = @items.length % @size
+    index = @count % @size
+    @count++
     item._timestamp = Number(new Date)
     @items[index] = item
     @buildKey(index, item)

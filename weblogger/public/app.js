@@ -22,6 +22,7 @@ $(function(){
 
     index: function(){
       $("#list-view").show();
+      App.enableScrolling();
       $("#detail-view").hide();
     }
   });
@@ -95,6 +96,7 @@ $(function(){
       var reqDetail = $.mustache(this.template, this.model.toJSON());
       this.container.show();
       this.container.html(reqDetail);
+      App.disableScrolling();
       return this;
     }
   });
@@ -125,6 +127,25 @@ $(function(){
       if (window.scrollWithIt == true) {
         window.scrollTo(0, document.body.scrollHeight);
       }
+    },
+
+    disableScrolling: function(){
+      window.scrollWithIt = false;
+      $('#scroll-btn').attr('class', '');
+    },
+
+    enableScrolling: function(){
+      window.scrollWithIt = true;
+      $('#scroll-btn').attr('class', 'active');
+      window.scrollTo(0, document.body.scrollHeight);
+    },
+
+    toggleScrolling: function() {
+      if (window.scrollWithIt == true) {
+        this.disableScrolling();
+      } else {
+        this.enableScrolling();
+      }
     }
 
   });
@@ -135,14 +156,7 @@ $(function(){
   Backbone.history.start();
 
   $('#scroll-btn').click(function() {
-    if (window.scrollWithIt == true) {
-      $(this).attr('class', '');
-      window.scrollWithIt = false;
-    } else {
-      $(this).attr('class', 'active');
-      window.scrollTo(0, document.body.scrollHeight);
-      window.scrollWithIt = true;
-    }
+    App.toggleScrolling();
   });
 
 });
