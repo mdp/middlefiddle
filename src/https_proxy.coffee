@@ -54,8 +54,6 @@ exports.HttpsProxy = class HttpsProxy extends HttpProxy
               log.warn("Bad proxy call")
               log.debug("Sent: #{headers}")
               c.end()
-        else
-          # Proxying data
     tlsServer.listen(port)
 
 
