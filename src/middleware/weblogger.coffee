@@ -71,19 +71,23 @@ longFormat = (req, res) ->
     "#{key}: #{val}"
   res_headers = for key, val of res.headers
     "#{key}: #{val}"
-  content = null
+  responseContent = ''
+  requestContent = ''
+  for buffer in req._content
+    requestContent += buffer.toString('utf-8')
+    break if requestContent.length > 100000
   unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
-    content = ''
+    responseContent = ''
     for buffer in res._content
-      content += buffer.toString('utf-8')
-      break if content.length > 100000
+      responseContent += buffer.toString('utf-8')
+      break if responseContent.length > 100000
   request:
     method: req.method
     headers: req_headers
-    content: req._content
+    content: requestContent
   response:
     status: res.statusCode
     headers: res_headers
-    content: content
+    content: responseContent
   time: (new Date - req._startTime)
 

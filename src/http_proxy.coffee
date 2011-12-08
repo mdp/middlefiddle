@@ -59,6 +59,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       safeUrl += proxyUrl.search if proxyUrl.search?
       req.url = safeUrl
       req.fullUrl = "http://" + req.headers['host'] + req.url
+    contentLogger(req)
     next()
 
   listenHTTPS: (port) ->
@@ -105,21 +106,21 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     upstream_request.end()
 
 
-contentLogger = (response) ->
-  response._content = []
+contentLogger = (stream) ->
+  stream._content = []
   unzipper = zlib.createUnzip()
   unzipper.on 'data', (data) ->
-    response._content.push(data)
-  switch (response.headers['content-encoding'])
+    stream._content.push(data)
+  switch (stream.headers['content-encoding'])
     when 'gzip'
       log.debug("Unzipping")
-      response.pipe(unzipper)
+      stream.pipe(unzipper)
       break
     when 'deflate'
       log.debug("Deflating")
-      response.pipe(unzipper)
+      stream.pipe(unzipper)
       break
     else
-      response.on 'data', (data)->
-        response._content.push(data)
+      stream.on 'data', (data)->
+        stream._content.push(data)
       break
