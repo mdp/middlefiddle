@@ -10,6 +10,7 @@ $(function(){
     },
 
     showRequest: function(id){
+      App.rememberScrollPosition();
       var reqDetails = new RequestDetail({id: id});
       reqDetails.fetch({
         success: function(model){
@@ -22,7 +23,7 @@ $(function(){
 
     index: function(){
       $("#list-view").show();
-      App.enableScrolling();
+      App.setScrollPosition();
       $("#detail-view").hide();
     }
   });
@@ -32,13 +33,14 @@ $(function(){
   window.Request = Backbone.Model.extend({
 
     statusClass: function(){
-      if (this.status >= 500) {
+      var status = this.attributes.status;
+      if (status >= 500) {
         return 'five_hundred';
-      } else if (this.status >= 400) {
+      } else if (status >= 400) {
         return 'four_hundred';
-      } else if (this.status >= 300) {
+      } else if (status >= 300) {
         return 'three_hundred';
-      } else if (this.status >= 200) {
+      } else if (status >= 200) {
         return 'two_hundred';
       } else {
         return 'two_hundred';
@@ -140,6 +142,32 @@ $(function(){
       window.scrollTo(0, document.body.scrollHeight);
     },
 
+    rememberScrollPosition: function(){
+      if (window.scrollWithIt === true) {
+        this.disableScrolling();
+        this.lastScrollPosition = -1;
+      } else {
+        this.lastScrollPosition = window.pageYOffset;
+      }
+    },
+
+    setScrollPosition: function(){
+      if (this.lastScrollPosition >= 0) {
+        window.scrollTo(0, this.lastScrollPosition);
+      } else {
+        this.enableScrolling();
+      }
+    },
+
+    scrollEvent: function(){
+      if (window.pageYOffset < this.lastScrollPosition){
+        this.disableScrolling();
+      }
+      if (window.scrollWithIt === true) {
+        this.lastScrollPosition = window.pageYOffset;
+      }
+    },
+
     toggleScrolling: function() {
       if (window.scrollWithIt == true) {
         this.disableScrolling();
@@ -158,5 +186,7 @@ $(function(){
   $('#scroll-btn').click(function() {
     App.toggleScrolling();
   });
-
+  $(window).scroll(function() {
+    App.scrollEvent();
+  });
 });
