@@ -1,3 +1,6 @@
+Stream          = require "stream"
+fs              = require 'fs'
+zlib            = require "zlib"
 http            = require "http"
 https           = require "https"
 url             = require "url"
@@ -72,6 +75,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
       res.headers = upstream_res.headers
+      contentLogger(res)
 
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
       upstream_res.on 'data', (chunk) ->
@@ -93,8 +97,29 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       upstream_request = https.request passed_opts, upstream_processor
     else
       upstream_request = http.request passed_opts, upstream_processor
+
     upstream_request.on 'error', (err)->
       log.error("Fail - #{req.method} - #{req.fullUrl}")
+      log.error(err)
       res.end()
     upstream_request.end()
 
+
+contentLogger = (response) ->
+  response._content = []
+  unzipper = zlib.createUnzip()
+  unzipper.on 'data', (data) ->
+    response._content.push(data)
+  switch (response.headers['content-encoding'])
+    when 'gzip'
+      log.debug("Unzipping")
+      response.pipe(unzipper)
+      break
+    when 'deflate'
+      log.debug("Deflating")
+      response.pipe(unzipper)
+      break
+    else
+      response.on 'data', (data)->
+        response._content.push(data)
+      break

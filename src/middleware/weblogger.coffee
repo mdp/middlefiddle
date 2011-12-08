@@ -1,4 +1,3 @@
-zlib = require 'zlib'
 express = require('express')
 io = require('socket.io')
 ringBuffer = require('../utils/ringbuffer').create(1000)
@@ -7,9 +6,8 @@ requestFilter = require '../request_filter'
 config = require '../config'
 currentSocket = null
 
-logContentEnabled = (res) ->
-  type = res.headers['content-type'].match(/^([^\;]+)/)[1]
-  type.match(/^text/)
+# Things I don't want to dump into the content field
+impracticalMimeTypes = /^(image|audio|video)\//
 
 createServer = (callback) ->
   app = express.createServer()
@@ -24,7 +22,7 @@ createServer = (callback) ->
   app.get '/:key', (req, res) ->
     requestLog = ringBuffer.retrieve(req.params.key)
     if requestLog
-      res.send JSON.stringify(ringBuffer.retrieve(req.params.key)), 200
+      res.send JSON.stringify(longFormat.apply(this, requestLog), 200)
     else
       res.send "Not Found", 404
 
@@ -43,16 +41,10 @@ exports = module.exports = (filter) ->
 
     req._startTime = new Date
     res._length = 0
-    res._content = ''
 
-    if (req._logging)
-      return next()
-
-    req._logging = true
     end = res.end
     res.on 'data', (data) ->
       res._length += data.length
-      res._content += data.toString('binary')
     res.end = ->
       res.end = end;
       weblog(req, res)
@@ -60,18 +52,11 @@ exports = module.exports = (filter) ->
     next()
 
 weblog = (req, res) ->
-  logger = (req, res)->
-    res._logKey = ringBuffer.add(longFormat(req, res))
-    if currentSocket
-      currentSocket.emit 'request', { request: shortFormat(req, res) }
-      currentSocket.broadcast.emit 'request', { request: shortFormat(req, res) }
-  if res.headers && res.headers['content-encoding'] && res.headers['content-encoding'].match(/gzip/)
-    zlib.unzip new Buffer(res._content, 'binary'), (err, buffer)->
-      res._content = buffer.toString('utf-8')
-      logger(req, res)
-  else
-    res._content = res._content.toString('utf-8')
-    logger(req, res)
+  res._logKey = ringBuffer.add([req, res])
+  if currentSocket
+    currentSocket.emit 'request', { request: shortFormat(req, res) }
+    currentSocket.broadcast.emit 'request', { request: shortFormat(req, res) }
+
 
 shortFormat = (req, res) ->
   id: res._logKey
@@ -86,12 +71,19 @@ longFormat = (req, res) ->
     "#{key}: #{val}"
   res_headers = for key, val of res.headers
     "#{key}: #{val}"
+  content = null
+  unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
+    content = ''
+    for buffer in res._content
+      content += buffer.toString('utf-8')
+      break if content.length > 100000
   request:
     method: req.method
     headers: req_headers
+    content: req._content
   response:
     status: res.statusCode
     headers: res_headers
-    content: res._content
+    content: content
   time: (new Date - req._startTime)
 
