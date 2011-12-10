@@ -2,7 +2,7 @@ express = require('express')
 io = require('socket.io')
 ringBuffer = require('../utils/ringbuffer').create(1000)
 log = require '../logger'
-requestFilter = require '../request_filter'
+sessionFilter = require '../session_filter'
 config = require '../config'
 currentSocket = null
 
@@ -36,18 +36,11 @@ exports = module.exports = (filter) ->
   createServer()
 
   return (req, res, next) ->
-    if !requestFilter.matches(filter, req)
-      return next()
-
-    req._startTime = new Date
-    res._length = 0
-
     end = res.end
-    res.on 'data', (data) ->
-      res._length += data.length
     res.end = ->
       res.end = end;
-      weblog(req, res)
+      if !sessionFilter.matches(filter, res)
+        weblog(req, res)
       res.end()
     next()
 
@@ -56,7 +49,6 @@ weblog = (req, res) ->
   if currentSocket
     currentSocket.emit 'request', { request: shortFormat(req, res) }
     currentSocket.broadcast.emit 'request', { request: shortFormat(req, res) }
-
 
 shortFormat = (req, res) ->
   id: res._logKey

@@ -71,6 +71,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     return this
 
   outboundProxy: (req, res, next) ->
+    req._startTime = new Date
     passed_opts = {method:req.method, path:req.url, host:req._host, headers:req.headers, port:req._port}
     upstream_processor = (upstream_res) ->
       # Helpers for easier logging upstream
@@ -108,9 +109,11 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
 contentLogger = (stream) ->
   stream._content = []
+  stream._length = 0
   unzipper = zlib.createUnzip()
   unzipper.on 'data', (data) ->
     stream._content.push(data)
+    stream._length += data.length
   switch (stream.headers['content-encoding'])
     when 'gzip'
       log.debug("Unzipping")
@@ -123,4 +126,5 @@ contentLogger = (stream) ->
     else
       stream.on 'data', (data)->
         stream._content.push(data)
+        stream._length += data.length
       break
