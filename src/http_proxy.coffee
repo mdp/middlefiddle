@@ -50,15 +50,10 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     else
       req._port = 80
     if isSecure(req)
-      req.fullUrl = "https://" + req.headers['host'] + req.url
+      req._url = "https://" + req.headers['host'] + req.url
       req.ssl = true
     else
-      safeUrl = ''
-      proxyUrl = url.parse(req.url.slice(1))
-      safeUrl += proxyUrl.pathname
-      safeUrl += proxyUrl.search if proxyUrl.search?
-      req.url = safeUrl
-      req.fullUrl = "http://" + req.headers['host'] + req.url
+      req._url = "http://" + req.headers['host'] + req.url
     contentLogger(req)
     next()
 
@@ -85,6 +80,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         res.write(chunk, 'binary')
       upstream_res.on 'end', (data)->
         res.emit 'end', data
+        res._endTime = new Date
         res.end(data)
       upstream_res.on 'close', ->
         res.emit 'close'
@@ -101,7 +97,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       upstream_request = http.request passed_opts, upstream_processor
 
     upstream_request.on 'error', (err)->
-      log.error("Fail - #{req.method} - #{req.fullUrl}")
+      log.error("Fail - #{req.method} - #{req._url}")
       log.error(err)
       res.end()
     upstream_request.end()

@@ -1,5 +1,6 @@
 # Require coffee-script to allow us to use .coffee proxies
 require 'coffee-script'
+optimist = require 'optimist'
 path = require 'path'
 log = require './logger'
 
@@ -13,7 +14,7 @@ usage = ->
 unless process.argv.length > 2
   usage()
 
-passedArgs = process.argv.slice(3)
+passedArgs = optimist.parse(process.argv.slice(3))
 Mf = require './index' # Dependency injection for the middleware proxies
 
 # Look for the appropriate 'fiddle'

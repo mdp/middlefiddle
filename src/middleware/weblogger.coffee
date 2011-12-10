@@ -39,7 +39,7 @@ exports = module.exports = (filter) ->
     end = res.end
     res.end = ->
       res.end = end;
-      if !sessionFilter.matches(filter, res)
+      if sessionFilter.matches(filter, res)
         weblog(req, res)
       res.end()
     next()
@@ -53,10 +53,10 @@ weblog = (req, res) ->
 shortFormat = (req, res) ->
   id: res._logKey
   status: res.statusCode
-  url: req.fullUrl
+  url: req._url
   method: req.method
   length: res._length
-  time: (new Date - req._startTime)
+  time: (res._endTime - req._startTime)
 
 longFormat = (req, res) ->
   req_headers = for key, val of req.headers
@@ -81,5 +81,5 @@ longFormat = (req, res) ->
     status: res.statusCode
     headers: res_headers
     content: responseContent
-  time: (new Date - req._startTime)
+  time: (res._endTime - req._startTime)
 
