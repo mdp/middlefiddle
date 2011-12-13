@@ -10,7 +10,7 @@ exports.matches = matches = (filter, session) ->
   # A word of warning about contains:
   # After a page loads you'll have it catched, and subsequent loads will
   # result in a likely 304, which of course won't show up
-  if filter.contains
+  if filter.contains && session.headers
     contentType = session.headers['content-type'] || ''
     if session.content && (contentType.search(/^(image|audio|video)/) < 0)
       content = ''

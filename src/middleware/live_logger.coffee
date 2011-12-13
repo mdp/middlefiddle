@@ -41,9 +41,10 @@ exports = module.exports = (requestFilter, responseFilter) ->
     end = res.end
     res.end = ->
       res.end = end;
+      res.end()
+    res.on 'processed', () ->
       if sessionFilter.matches(responseFilter, res)
         liveLog(req, res)
-      res.end()
     next()
 
 liveLog = (req, res) ->
