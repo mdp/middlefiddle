@@ -13,10 +13,10 @@ createServer = (callback) ->
   app = express.createServer()
   io = io.listen(app, {"log level": 0})
   app.configure ->
-    app.use express.static(__dirname + '/../../weblogger/public')
+    app.use express.static(__dirname + '/../../live_logger/public')
 
   app.get '/', (req, res) ->
-    index = require('fs').readFileSync(__dirname + '/../../weblogger/index.html')
+    index = require('fs').readFileSync(__dirname + '/../../live_logger/index.html')
     res.send index.toString(), 200
 
   app.get '/:key', (req, res) ->
@@ -31,32 +31,34 @@ createServer = (callback) ->
 
   app.listen(config.liveLoggerPort)
 
-exports = module.exports = (filter) ->
+exports = module.exports = (requestFilter, responseFilter) ->
   log.info ("Starting LiveLogger on #{config.liveLoggerPort}")
   createServer()
 
   return (req, res, next) ->
+    unless sessionFilter.matches(requestFilter, req)
+      return next()
     end = res.end
     res.end = ->
       res.end = end;
-      if sessionFilter.matches(filter, res)
-        weblog(req, res)
+      if sessionFilter.matches(responseFilter, res)
+        liveLog(req, res)
       res.end()
     next()
 
-weblog = (req, res) ->
-  res._logKey = ringBuffer.add([req, res])
+liveLog = (req, res) ->
+  res.mf.logKey = ringBuffer.add([req, res])
   if currentSocket
     currentSocket.emit 'request', { request: shortFormat(req, res) }
     currentSocket.broadcast.emit 'request', { request: shortFormat(req, res) }
 
 shortFormat = (req, res) ->
-  id: res._logKey
+  id: res.mf.logKey
   status: res.statusCode
-  url: req._url
+  url: req.href
   method: req.method
-  length: res._length
-  time: (res._endTime - req._startTime)
+  length: res.length
+  time: (res.endTime - req.startTime)
 
 longFormat = (req, res) ->
   req_headers = for key, val of req.headers
@@ -65,15 +67,16 @@ longFormat = (req, res) ->
     "#{key}: #{val}"
   responseContent = ''
   requestContent = ''
-  for buffer in req._content
+  for buffer in req.content
     requestContent += buffer.toString('utf-8')
     break if requestContent.length > 100000
   unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
     responseContent = ''
-    for buffer in res._content
+    for buffer in res.content
       responseContent += buffer.toString('utf-8')
       break if responseContent.length > 100000
   request:
+    url: req.href
     method: req.method
     headers: req_headers
     content: requestContent
@@ -81,5 +84,5 @@ longFormat = (req, res) ->
     status: res.statusCode
     headers: res_headers
     content: responseContent
-  time: (res._endTime - req._startTime)
+  time: (res.endTime - req.startTime)
 

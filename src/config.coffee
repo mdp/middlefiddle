@@ -19,7 +19,7 @@ for mfPath in mfPaths
     break
 unless mfDir
   mfDir = defaultMfDir
-log.info("Using #{mfDir} for cert/config/fiddle source")
+log.info("Loading from #{mfDir}")
 
 configFile = mfDir + "/config.json"
 try

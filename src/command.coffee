@@ -11,7 +11,7 @@ process.title = "middlefiddle"
 usage = ->
   console.error "usage: mf [middleware]"
   process.exit -1
-unless process.argv.length > 2
+unless process.argv.length > 1
   usage()
 
 passedArgs = optimist.parse(process.argv.slice(3))
@@ -31,18 +31,24 @@ log.debug("Checking the following locations")
 log.debug(fiddlePaths)
 
 activeFiddle = null
-for fiddlePath in fiddlePaths
-  testPath = fiddlePath + "/" + process.argv[2]
-  if path.existsSync(testPath + ".coffee") || path.existsSync(testPath + ".js")
-    activeFiddle = testPath
-    break
-if activeFiddle == null
-  log.error("Can't find a fiddle named '#{process.argv[2]}'. Looked in: " + fiddlePaths)
-  process.exit -1
+if process.argv.length > 2
+  for fiddlePath in fiddlePaths
+    testPath = fiddlePath + "/" + process.argv[2]
+    if path.existsSync(testPath + ".coffee") || path.existsSync(testPath + ".js")
+      activeFiddle = testPath
+      break
+  if activeFiddle == null
+    log.error("Can't find a fiddle named '#{process.argv[2]}'. Looked in: " + fiddlePaths)
+    process.exit -1
+  middleware = require(activeFiddle).middleware(Mf, passedArgs)
+
+else
+  # Default to the 'sites' fiddle for now
+  middleware = Mf.defaultFiddle().middleware()
 
 # Middleware are passed both the MiddleFiddle object, and any additional arguments
-middleware = require(activeFiddle).middleware(Mf, passedArgs)
 
 log.info("Starting HTTP Proxy on port #{Mf.config.httpPort}")
 log.info("Starting HTTPS Proxy on port #{Mf.config.httpsPort}")
 Mf.createProxy.apply(this, middleware).listen(Mf.config.httpPort).listenHTTPS(Mf.config.httpsPort)
+

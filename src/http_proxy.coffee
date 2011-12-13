@@ -33,27 +33,34 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     @middlewares
 
   proxyCleanup: (req, res, next) ->
-    if (req.realHost?)
-      # Set request.realHost to alter the request destination destination
-      log.debug("Overriding outbound host to:" + req.realHost)
-      req._host = req.realHost
-    else
-      req._host = req.headers['host'].split(":")[0]
+    # Attach a namespace object to request and response for safer stashing of
+    # properties and functions you'd like to have tag along
+    req.mf ||= {}
+    res.mf ||= {}
+    # Request now has an explicit host which can be overridden later
+    req.host = req.headers['host'].split(":")[0]
 
     # Dertermine outbound port
     # Sometime https proxy clients do not explicitly set the port to 443
-    serverPort = req._host.split(":")[1]
+    serverPort = req.host.split(":")[1]
     if serverPort?
-      req._port = serverPort
+      req.port = serverPort
     else if req.ssl
-      req._port = 443
+      req.port = 443
     else
-      req._port = 80
+      req.port = 80
     if isSecure(req)
-      req._url = "https://" + req.headers['host'] + req.url
+      req.href = "https://" + req.headers['host'] + req.path
       req.ssl = true
     else
-      req._url = "http://" + req.headers['host'] + req.url
+      # Proxy requests send the full URL, not just the path
+      # Node HTTP sees this at '/http://google.com'
+      safeUrl = ''
+      proxyUrl = url.parse(req.url.slice(1))
+      safeUrl += proxyUrl.pathname
+      safeUrl += proxyUrl.search if proxyUrl.search?
+      req.url = safeUrl
+      req.href = "http://" + req.headers['host'] + req.url
     contentLogger(req)
     next()
 
@@ -66,8 +73,8 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     return this
 
   outboundProxy: (req, res, next) ->
-    req._startTime = new Date
-    passed_opts = {method:req.method, path:req.url, host:req._host, headers:req.headers, port:req._port}
+    req.startTime = new Date
+    passed_opts = {method:req.method, path:req.url, host:req.host, headers:req.headers, port:req.port}
     upstream_processor = (upstream_res) ->
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
@@ -80,7 +87,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         res.write(chunk, 'binary')
       upstream_res.on 'end', (data)->
         res.emit 'end', data
-        res._endTime = new Date
+        res.endTime = new Date
         res.end(data)
       upstream_res.on 'close', ->
         res.emit 'close'
@@ -97,19 +104,19 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       upstream_request = http.request passed_opts, upstream_processor
 
     upstream_request.on 'error', (err)->
-      log.error("Fail - #{req.method} - #{req._url}")
+      log.error("Fail - #{req.method} - #{req.fullUrl}")
       log.error(err)
       res.end()
     upstream_request.end()
 
 
 contentLogger = (stream) ->
-  stream._content = []
-  stream._length = 0
+  stream.content = []
+  stream.length = 0
   unzipper = zlib.createUnzip()
   unzipper.on 'data', (data) ->
-    stream._content.push(data)
-    stream._length += data.length
+    stream.length += data.length
+    stream.content.push(data)
   switch (stream.headers['content-encoding'])
     when 'gzip'
       log.debug("Unzipping")
@@ -121,6 +128,6 @@ contentLogger = (stream) ->
       break
     else
       stream.on 'data', (data)->
-        stream._content.push(data)
-        stream._length += data.length
+        stream.content.push(data)
+        stream.length += data.length
       break
