@@ -52,8 +52,8 @@ exports.middleware = () ->
         middleware = m
         break
     if middleware
-      return middleware.middleware(req, res, next)
+      return middleware(Mf)(req, res, next)
     else
       return next()
 
-  return [Mf.weblogger(), siteMiddleware]
+  return [Mf.live_logger(), siteMiddleware]

@@ -1,3 +1,4 @@
+util            = require 'util'
 Stream          = require "stream"
 fs              = require 'fs'
 zlib            = require "zlib"
@@ -61,8 +62,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       safeUrl += proxyUrl.search if proxyUrl.search?
       req.url = safeUrl
       req.href = "http://" + req.headers['host'] + req.url
-    contentLogger req, () ->
-      req.emit 'processed'
+    bodyLogger req
     next()
 
   listenHTTPS: (port) ->
@@ -80,21 +80,19 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
       res.headers = upstream_res.headers
-      contentLogger res, () ->
-        res.emit 'processed'
+      bodyLogger res
 
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
       upstream_res.on 'data', (chunk) ->
-        res.emit 'data', chunk
         res.write(chunk, 'binary')
+        res.emit 'data', chunk
       upstream_res.on 'end', (data)->
-        res.emit 'end', data
         res.endTime = new Date
-        res.end(data)
+        res.end()
+        res.emit 'end'
       upstream_res.on 'close', ->
         res.emit 'close'
       upstream_res.on 'error', ->
-        res.emit 'end'
         res.abort()
     req.on 'data', (chunk) ->
       upstream_request.write(chunk)
@@ -112,15 +110,17 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     upstream_request.end()
 
 
-contentLogger = (stream, callback) ->
-  stream.content = []
+bodyLogger = (stream, callback) ->
+  callback ||= () ->
+    stream.emit 'body'
+  stream.on 'end', ()->
+    callback()
+  stream.body = []
   stream.length = 0
   unzipper = zlib.createUnzip()
   unzipper.on 'data', (data) ->
     stream.length += data.length
-    stream.content.push(data)
-  unzipper.on 'end', () ->
-    callback()
+    stream.body.push(data)
   switch (stream.headers['content-encoding'])
     when 'gzip'
       log.debug("Unzipping")
@@ -132,8 +132,6 @@ contentLogger = (stream, callback) ->
       break
     else
       stream.on 'data', (data)->
-        stream.content.push(data)
+        stream.body.push(data)
         stream.length += data.length
-      stream.on 'end', ()->
-        callback()
       break

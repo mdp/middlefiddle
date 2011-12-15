@@ -2,6 +2,7 @@ _ = require 'underscore'
 
 # Test the values in a reqeust or response
 exports.matches = matches = (filter, session) ->
+  return true unless filter
   if _.isFunction(filter)
     match = filter(session) || false
     return match
@@ -12,10 +13,10 @@ exports.matches = matches = (filter, session) ->
   # result in a likely 304, which of course won't show up
   if filter.contains && session.headers
     contentType = session.headers['content-type'] || ''
-    if session.content && (contentType.search(/^(image|audio|video)/) < 0)
+    if session.body && (contentType.search(/^(image|audio|video)/) < 0)
       content = ''
       regex = new RegExp(filter.contains, 'g')
-      for s in session.content
+      for s in session.body
         content += s.toString('utf-8')
       if(content.search(regex) >= 0)
         return true

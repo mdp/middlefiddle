@@ -38,11 +38,8 @@ exports = module.exports = (requestFilter, responseFilter) ->
   return (req, res, next) ->
     unless sessionFilter.matches(requestFilter, req)
       return next()
-    end = res.end
-    res.end = ->
-      res.end = end;
-      res.end()
-    res.on 'processed', () ->
+    # Wait till we have the body unzipped and processed
+    res.on 'body', () ->
       if sessionFilter.matches(responseFilter, res)
         liveLog(req, res)
     next()
@@ -68,12 +65,12 @@ longFormat = (req, res) ->
     "#{key}: #{val}"
   responseContent = ''
   requestContent = ''
-  for buffer in req.content
+  for buffer in req.body
     requestContent += buffer.toString('utf-8')
     break if requestContent.length > 100000
   unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
     responseContent = ''
-    for buffer in res.content
+    for buffer in res.body
       responseContent += buffer.toString('utf-8')
       break if responseContent.length > 100000
   request:
