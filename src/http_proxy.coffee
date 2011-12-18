@@ -7,6 +7,7 @@ https           = require "https"
 url             = require "url"
 connect         = require "connect"
 log             = require "./logger"
+sessionFilter   = require "./session_filter"
 
 safeParsePath = (req) ->
 
@@ -62,6 +63,9 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       safeUrl += proxyUrl.search if proxyUrl.search?
       req.url = safeUrl
       req.href = "http://" + req.headers['host'] + req.url
+    res.addHeader = addHeader
+    res.removeHeader = removeHeader
+    res.modifyHeaders = modifyHeaders
     bodyLogger req
     next()
 
@@ -80,7 +84,15 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
       res.headers = upstream_res.headers
-      bodyLogger res
+      res.modifyHeaders()
+
+      if res.headers && res.headers['content-type'] && res.headers['content-type'].search(/(text)|(application)/) >= 0
+        res.isBinary = false
+      else
+        res.isBinary = true
+
+      # Store body data with the response
+      bodyLogger(res)
 
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
       upstream_res.on 'data', (chunk) ->
@@ -88,7 +100,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         res.emit 'data', chunk
       upstream_res.on 'end', (data)->
         res.endTime = new Date
-        res.end()
+        res.end(data)
         res.emit 'end'
       upstream_res.on 'close', ->
         res.emit 'close'
@@ -109,18 +121,33 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       res.end()
     upstream_request.end()
 
+addHeader = (header, value) ->
+  @addedHeaders ||= []
+  @addedHeaders.push([header, value])
+
+removeHeader = (header) ->
+  @removedHeaders ||= []
+  @removedHeaders.push(header)
+
+modifyHeaders = () ->
+  if @addedHeaders
+    for header in @addedHeaders
+      @headers[header[0]] = header[1]
+  if @removedHeaders
+    for header in @removedHeaders
+      delete @headers[header]
 
 bodyLogger = (stream, callback) ->
   callback ||= () ->
     stream.emit 'body'
-  stream.on 'end', ()->
-    callback()
   stream.body = []
   stream.length = 0
   unzipper = zlib.createUnzip()
   unzipper.on 'data', (data) ->
     stream.length += data.length
     stream.body.push(data)
+  unzipper.on 'end', ->
+    callback()
   switch (stream.headers['content-encoding'])
     when 'gzip'
       log.debug("Unzipping")
@@ -134,4 +161,6 @@ bodyLogger = (stream, callback) ->
       stream.on 'data', (data)->
         stream.body.push(data)
         stream.length += data.length
+      stream.on 'end', ()->
+        callback()
       break

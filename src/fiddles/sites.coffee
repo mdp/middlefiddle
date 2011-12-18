@@ -6,6 +6,7 @@
 # google.com.coffee will run on any request to google.com as well as www.google.com
 #
 fs = require 'fs'
+_ = require 'underscore'
 Mf = require '../index'
 sitesDir = Mf.config.mfDir + '/sites'
 siteMiddlewares = {}
@@ -49,10 +50,13 @@ exports.middleware = () ->
     for key, m of siteMiddlewares
       if req.host.match(key)
         Mf.log.debug("Fiddling with #{req.host}")
-        middleware = m
+        middleware = m(Mf)
         break
-    if middleware
-      return middleware(Mf)(req, res, next)
+    if _.isArray(middleware)
+      for m in middleware
+        m(req, res, next)
+    else if middleware
+      middleware(req, res, next)
     else
       return next()
 

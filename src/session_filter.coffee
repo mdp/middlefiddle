@@ -3,6 +3,7 @@ _ = require 'underscore'
 # Test the values in a reqeust or response
 exports.matches = matches = (filter, session) ->
   return true unless filter
+  return true if filter == true
   if _.isFunction(filter)
     match = filter(session) || false
     return match
