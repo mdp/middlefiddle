@@ -49,6 +49,13 @@ $(function(){
 
   });
 
+  window.Requests = Backbone.Collection.extend({
+    model: Request,
+    url: function() {
+      return '/all'
+    }
+  });
+
   window.RequestDetail = Backbone.Model.extend({
     url: function(){
       return "/" + this.id;
@@ -117,13 +124,27 @@ $(function(){
 
     initialize: function() {
       var self = this;
+      backlog = new Requests;
+      requests = backlog.fetch({
+        success: function(collection) {
+          for(req in collection.models) {
+            data = collection.models[req].attributes;
+            console.log(data)
+            self.addRequest(data);
+          }
+        }
+      });
       window.socket.on('request', function (data) {
         self.addRequest(data);
       });
     },
 
     addRequest: function(data) {
-      var model = new Request(data['request']);
+      if(data['request']){
+        var model = new Request(data['request']);
+      } else {
+        var model = new Request(data);
+      }
       var view = new RequestView({model: model});
       $("ul#requests").append(view.render().el);
       if (window.scrollWithIt == true) {
@@ -185,8 +206,5 @@ $(function(){
 
   $('#scroll-btn').click(function() {
     App.toggleScrolling();
-  });
-  $(window).scroll(function() {
-    App.scrollEvent();
   });
 });

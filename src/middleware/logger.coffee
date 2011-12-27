@@ -1,6 +1,6 @@
 express = require('express')
 io = require('socket.io')
-ringBuffer = require('../utils/ringbuffer').create(1000)
+ringBuffer = require('../utils/ringbuffer').create(100)
 log = require '../logger'
 sessionFilter = require '../session_filter'
 config = require '../config'
@@ -17,6 +17,16 @@ createServer = (callback) ->
   app.get '/', (req, res) ->
     index = require('fs').readFileSync(__dirname + '/../../logger/index.html')
     res.send index.toString(), 200
+
+  app.get '/all', (req, res) ->
+    requestLogs = ringBuffer.all(req.params.key)
+    if requestLogs
+      items = []
+      for request in requestLogs
+        items.push(shortFormat.apply(this, [request[0], request[1]]))
+      res.send JSON.stringify(items, 200)
+    else
+      res.send JSON.stringify([], 200)
 
   app.get '/:key', (req, res) ->
     requestLog = ringBuffer.retrieve(req.params.key)

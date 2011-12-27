@@ -10,6 +10,9 @@ class Ringbuffer
     @items[index] = item
     @buildKey(index, item)
 
+  all: () ->
+    @items
+
   retrieve: (key) ->
     if !key.match(/^[0-9]+\-[0-9]+$/)
       return null
