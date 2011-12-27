@@ -16,7 +16,10 @@ exports.matches = matches = (filter, session) ->
     contentType = session.headers['content-type'] || ''
     if session.body && (contentType.search(/^(image|audio|video)/) < 0)
       content = ''
-      regex = new RegExp(filter.contains, 'g')
+      if _.isRegExp(filter.contains)
+        regex = filter.contains
+      else
+        regex = new RegExp(filter.contains, 'g')
       for s in session.body
         content += s.toString('utf-8')
       if(content.search(regex) >= 0)

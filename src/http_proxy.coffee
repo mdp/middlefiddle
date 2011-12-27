@@ -6,6 +6,7 @@ http            = require "http"
 https           = require "https"
 url             = require "url"
 connect         = require "connect"
+config          = require "./config"
 log             = require "./logger"
 sessionFilter   = require "./session_filter"
 
@@ -42,12 +43,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     # Request now has an explicit host which can be overridden later
     req.host = req.headers['host'].split(":")[0]
 
-    # Dertermine outbound port
-    # Sometime https proxy clients do not explicitly set the port to 443
-    serverPort = req.host.split(":")[1]
-    if serverPort?
-      req.port = serverPort
-    else if req.ssl
+    if req.ssl
       req.port = 443
     else
       req.port = 80
@@ -55,14 +51,23 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       req.href = "https://" + req.headers['host'] + req.path
       req.ssl = true
     else
+      # Act as a completely transparent proxy
+      if config.transparent
+        # Helper property
+        req.href = "http://" + req.headers['host'] + req.url
+
       # Proxy requests send the full URL, not just the path
       # Node HTTP sees this at '/http://google.com'
-      safeUrl = ''
-      proxyUrl = url.parse(req.url.slice(1))
-      safeUrl += proxyUrl.pathname
-      safeUrl += proxyUrl.search if proxyUrl.search?
-      req.url = safeUrl
-      req.href = "http://" + req.headers['host'] + req.url
+      else
+        safeUrl = ''
+        proxyUrl = url.parse(req.url.slice(1))
+        safeUrl += proxyUrl.pathname
+        safeUrl += proxyUrl.search if proxyUrl.search?
+        req.url = safeUrl
+        req.port = proxyUrl.port
+        # Helper property
+        req.href = proxyUrl.href
+
     res.addHeader = addHeader
     res.removeHeader = removeHeader
     res.modifyHeaders = modifyHeaders

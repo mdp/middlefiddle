@@ -20,8 +20,17 @@ h2 {
   font-size: 2em;
 }
 
+h3 {
+  font-size: 1.5em;
+  margin-bottom: 0.25em;
+  margin-top: 0.5em;
+  border-bottom: 1px solid #333;
+}
+
 #request {
   margin:0 4em;
+  padding-left: 0.75em;
+  padding-bottom: 1em;
   background-color: rgba(0, 0, 0, 0.25);
 }
 
@@ -44,6 +53,11 @@ h2 {
 }
 .header {
   border-bottom: 1px solid #FF9933;
+  margin: 1em 0;
+}
+
+.content {
+  margin-left: 1em;
 }
 
 ul#requests li{
@@ -55,6 +69,10 @@ ul#requests li{
   background-color: #222;
   list-style-type: none;
   color: #CCC;
+}
+
+ul.headers li {
+  margin-bottom:0.20em;
 }
 
 ul#requests li .line div {

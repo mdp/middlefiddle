@@ -38,7 +38,6 @@ exports = module.exports = (replacer, filter) ->
         delete res.headers['content-encoding']
 
         writeHead.call(res, res.statusCode, res.headers)
-        write.call(res, content)
-        end.call(res)
+        end.call(res, content)
     next()
 
