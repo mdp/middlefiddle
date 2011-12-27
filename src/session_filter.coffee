@@ -29,6 +29,7 @@ exports.matches = matches = (filter, session) ->
 
   match = false
   for key, test of filter
+    console.log key
     if session[key]
       if _.isArray(test)
         for t in test
