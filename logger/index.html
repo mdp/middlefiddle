@@ -10,7 +10,7 @@
     <script src="/socket.io/socket.io.js"></script>
     <script src="/app.js"></script>
     <link rel="stylesheet" type="text/css" href="/stylesheets/default.css">
-    <script id="request-item" type="text/x-jquery-tmpl"> 
+    <script id="request-item" type="text/x-jquery-tmpl">
       <div class='line'>
         <div class='method'>{{method}}</div>
         <div class='url'>{{url}}</div>
@@ -21,32 +21,46 @@
         <div class='time'>{{length}} bytes</div>
       </div>
     </script>
-    <script id="requestDetailTemplate" type="text/x-jquery-tmpl"> 
+    <script id="requestDetailTemplate" type="text/x-jquery-tmpl">
       <div id='request'>
         {{#request}}
         <div class='header'>
-          <h1>Request - {{method}}</h1>
+          <h2>{{method}} - {{url}}</h2>
         </div>
-        <ul>
-          {{#headers}}
-          <li>{{.}}</li>
-          {{/headers}}
-        </ul>
-        <h2>Content</h2>
-        <pre>{{content}}</pre>
-        {{/request}}
+        <h3>HEADERS</h3>
+        <div class='content'>
+          <ul class='headers'>
+            {{#headers}}
+            <li>{{.}}</li>
+            {{/headers}}
+          </ul>
+          {{#content}}
+        </div>
+        <h3>CONTENT</h3>
+        <div class='content'>
+            <pre>{{.}}</pre>
+          {{/content}}
+          {{/request}}
+        </div>
         {{#response}}
         <div class='header'>
-          <h1>Response - {{status}}</h1>
+          <h2>Response - {{status}}</h2>
         </div>
-        <ul>
-          {{#headers}}
-          <li>{{.}}</li>
-          {{/headers}}
-        </ul>
-        <h2>Content</h2>
-        <pre>{{content}}</pre>
-        {{/response}}
+        <h3>HEADERS</h3>
+        <div class='content'>
+          <ul class='headers'>
+            {{#headers}}
+            <li>{{.}}</li>
+            {{/headers}}
+          </ul>
+          {{#content}}
+        </div>
+        <h3>CONTENT</h3>
+        <div class='content'>
+            <pre>{{content}}</pre>
+          {{/content}}
+          {{/response}}
+        </div>
       </div>
     </script>
   </head>
