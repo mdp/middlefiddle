@@ -178,7 +178,7 @@ $(function(){
 
   });
 
-  window.socket = io.connect('http://localhost');
+  window.socket = io.connect('/');
   window.App = new AppView;
   window.Controller = new Router;
   Backbone.history.start();
