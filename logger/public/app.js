@@ -124,32 +124,26 @@ $(function(){
 
     initialize: function() {
       var self = this;
-      backlog = new Requests;
-      requests = backlog.fetch({
-        success: function(collection) {
-          for(req in collection.models) {
-            data = collection.models[req].attributes;
-            console.log(data)
-            self.addRequest(data);
-          }
+      this.Requests = new Requests;
+      window.socket.on('request', function (data) {
+        self.Requests.add(data['request'])
+      });
+      this.Requests.bind('add', function(model){
+        var view = new RequestView({model: model});
+        $("ul#requests").append(view.render().el);
+        if (window.scrollWithIt == true) {
+          window.scrollTo(0, document.body.scrollHeight);
         }
       });
-      window.socket.on('request', function (data) {
-        self.addRequest(data);
-      });
-    },
-
-    addRequest: function(data) {
-      if(data['request']){
-        var model = new Request(data['request']);
-      } else {
-        var model = new Request(data);
-      }
-      var view = new RequestView({model: model});
-      $("ul#requests").append(view.render().el);
-      if (window.scrollWithIt == true) {
+      this.Requests.bind('reset', function(models){
+        _.each(models.models, function(model){
+          console.log(model);
+          var view = new RequestView({model: model});
+          $("ul#requests").append(view.render().el);
+        });
         window.scrollTo(0, document.body.scrollHeight);
-      }
+      });
+      this.Requests.fetch();
     },
 
     disableScrolling: function(){
