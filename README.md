@@ -22,7 +22,7 @@ By default MiddleFiddle logs all outbound traffic to a web based logger on local
 
 ## Usage
 
-#### Launch the basic logger
+### Launch the basic logger
 
     mf logger
     # Now open http://localhost:8411
@@ -33,7 +33,7 @@ MiddleFiddle looks for a .middlefiddle directory in the current working director
 
 Inside you'll find a config.coffee file, https certs, and a sites directory.
 
-#### Sites
+### Sites
 
 MiddleFiddle can alter requests based on the host name. You'll find some examples in
 [.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
@@ -70,8 +70,7 @@ You've also got a couple helper properties:
 
 ## Want to contribute
 
-This is my first node project, criticism is gladly accepted as long as it's in
-the form of a pull request.
+Criticism is gladly accepted as long as it's in the form of a pull request.
 
 ## Development
 
@@ -82,4 +81,4 @@ documentation from the source in `src/`.
 
 Released under the MIT license.
 
-Mark Percival <mark@markpercival.us>
+Mark Percival <m@mdp.im>
