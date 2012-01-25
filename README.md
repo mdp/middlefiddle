@@ -18,14 +18,29 @@ By default MiddleFiddle logs all outbound traffic to a web based logger on local
     git clone git://github.com/mdp/middlefiddle.git
     cd middlefiddle
     npm install
+    npm link #If you want to use it globally
 
 ### Usage
 
 #### Launch the basic logger
 
-    ./bin/mf
+    mf logger
 
 #### Configuration
+
+MiddleFiddle looks for a .middlefiddle directory in the current working directory, or at ~/.middlefiddle.
+
+Inside you'll find a config.coffee file, https certs, and a sites directory.
+
+##### Sites
+
+MiddleFiddle can alter requests based on the host name. You'll find some examples in
+[.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
+
+
+### Building your own Middleware
+
+Coming soon
 
 ### HTTPS Hijacking
 
