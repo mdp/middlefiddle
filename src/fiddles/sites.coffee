@@ -6,6 +6,7 @@
 # google.com.coffee will run on any request to google.com as well as www.google.com
 #
 fs = require 'fs'
+path = require 'path'
 _ = require 'underscore'
 Mf = require '../index'
 sitesDir = Mf.config.mfDir + '/sites'
@@ -26,6 +27,7 @@ stdin.on 'keypress', (chunk, key) ->
 # Matches to the host
 loadMiddlewares = () ->
   siteMiddlewares = {}
+  return unless path.existsSync(sitesDir)
   for site in fs.readdirSync(sitesDir)
     loadSiteMiddleware(site)
     watchMiddleware(site)
