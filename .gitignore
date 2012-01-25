@@ -1,4 +1,5 @@
 docs
 node_modules
+lib/*.js
 .middlefiddle/*
 !.middlefiddle/config.json
