@@ -2,3 +2,5 @@ docs
 node_modules
 .middlefiddle/*
 !.middlefiddle/config.json
+!.middlefiddle/sites
+!.middlefiddle/fiddles
