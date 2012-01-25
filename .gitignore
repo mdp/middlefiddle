@@ -1,6 +1,7 @@
 docs
 node_modules
-lib/*.js
+lib/*
+!/lib/bin
 .middlefiddle/*
 !.middlefiddle/config.json
 !.middlefiddle/sites
