@@ -4,74 +4,27 @@ MiddleFiddle is an outbound local proxy which lets to modify your outbound reque
 via [Connect](http://senchalabs.github.com/connect/) middleware. It support HTTP and HTTPS, the
 latter through a hijacking of the request with locally generated SSL certs.
 
-### Installation
+### Web Logging
 
-    npm install middlefiddle
+By default MiddleFiddle logs all outbound traffic to a web based logger on localhost:8411
 
-### Examples
-
-#### Change your user agent
-
-Changes your outbound user-agent depending on the URL
-
-    var Mf = require('middlefiddle');
-    var iPhoneUA = "Mozilla/5.0 (iPhone; U; CPU like Mac OS X; en) AppleWebKit/420+ (KHTML, like Gecko) Version/3.0 Mobile/1A543a Safari/419.3"
-    Mf.createProxy(Mf.logger(), Mf.user_agent(iPhoneUA, /google\.com/)).listen(8088).listenHTTPS(8089);
-
-#### Add headers to a response
-
-    var Mf = require('middlefiddle');
-
-    var addCSP = function(urlRegex) {
-      return function(req, res, next){
-        if (req.fullUrl.match(urlRegex)) {
-          var writeHead = res.writeHead;
-          res.writeHead = function(){
-            var headers = arguments[arguments.length-1];
-            var statusCode = arguments[0];
-            headers['x-content-security-policy'] = "allow 'self'";
-            writeHead.call(res, statusCode, headers);
-          };
-        }
-        next();
-      };
-    };
-
-    Mf.createProxy(addCSP(/google.com/)).listen(8088).listenHTTPS(8089);
-
-#### Streaming MP3 recorder
-
-Grab any mp3 downloaded or streamed to your browser:
-
-    var Mf = require('middlefiddle');
-    var url = require('url');
-    var fs = require('fs');
+![Request Logger](https://raw.githhub.com/mdp/middlefiddle)
 
 
-    var mp3Grab = function() {
-      return function(req, res, next){
-        var path = url.parse(req.url).pathname;
-        var filename;
-        if (path) {filename = path.split('/').pop()}
-        if (filename && filename.match(/\.mp3$/)){
-          console.log("Beginning capture of " + filename);
-          var file = fs.createWriteStream(filename);
-          res.addListener('data', function (chunk) {
-            file.write(chunk);
-          });
-          res.addListener("end", function(chunk) {
-            if (chunk) {
-              file.write(chunk);
-            }
-            file = undefined;
-            console.log("Downloaded - " + filename);
-          });
-        }
-        next();
-      };
-    };
+### Installation via Github
 
-    Mf.createProxy(mp3Grab()).listen(8088).listenHTTPS(8089);
+    # Depends on Node 0.6.x
+    git clone git://github.com/mdp/middlefiddle.git
+    cd middlefiddle
+    npm install
+
+### Usage
+
+#### Launch the basic logger
+
+    ./bin/mf
+
+#### Configuration
 
 ### HTTPS Hijacking
 

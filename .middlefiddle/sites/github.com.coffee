@@ -4,7 +4,7 @@ module.exports = (Mf) ->
   replacement = (string, req, res) ->
     contentType = res.headers['content-type'] || ''
     if contentType.search(/html/) >= 0
-      string.replace(/Repositories/g, "Suppositories")
+      string.replace(/repositories/ig, "suppositories")
     else
       false
 
