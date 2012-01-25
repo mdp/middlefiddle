@@ -8,7 +8,8 @@ latter through a hijacking of the request with locally generated SSL certs.
 
 By default MiddleFiddle logs all outbound traffic to a web based logger on localhost:8411
 
-![Request Logger](https://mdp.githhub.com/middlefiddle/images/RequestLogger.jpg)
+![Request Logger](http://mdp.github.com/middlefiddle/images/RequestLogger.jpg)
+![Request Logger](http://mdp.github.com/middlefiddle/images/RequestDetails.jpg)
 
 
 ### Installation via Github
