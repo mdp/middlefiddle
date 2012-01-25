@@ -1,5 +1,5 @@
 {
   "httpPort": 8088
-  "httpPort": 8088
-  "liveLoggerPort": 8411
+  , "httpsPort": 8089
+  , "liveLoggerPort": 8411
 }

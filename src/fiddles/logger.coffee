@@ -1,7 +1,7 @@
 # Take the following command line arguments
 # --url URL
 # --status STATUSCODE
-# --contant TEXT
+# --contains TEXT
 exports.middleware = (Mf, args) ->
   checkArguments(args)
   if args.h
