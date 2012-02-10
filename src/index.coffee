@@ -1,7 +1,6 @@
 fs = require 'fs'
 
-exports.createProxy      =    require("./http_proxy").createProxy
-exports.createHttpsProxy =    require("./https_proxy").createProxy
+exports.createProxy =    require("./proxy").createProxy
 exports.config =    require("./config")
 exports.log = require('./logger')
 exports.defaultFiddle = () ->
@@ -15,6 +14,6 @@ fs.readdirSync(__dirname + '/middleware').forEach (filename) ->
 
 # HTTPS DNS lookup errors throw an exception which
 # it difficult to catch
-process.on 'uncaughtException', (err)->
-  console.log(err)
+# process.on 'uncaughtException', (err)->
+  # console.log(err)
 

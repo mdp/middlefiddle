@@ -1,4 +1,5 @@
 util            = require 'util'
+_               = require('underscore')
 Stream          = require "stream"
 fs              = require 'fs'
 zlib            = require "zlib"
@@ -26,8 +27,9 @@ exports.createProxy = (middlewares...) ->
 
 exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
-  constructor: (@middlewares) ->
+  constructor: (middlewares) ->
     @middlewares ?= []
+    @middlewares = [middlewares] if _.isFunction middlewares
     super @bookendedMiddleware()
 
   bookendedMiddleware: ->
@@ -43,14 +45,13 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     # Request now has an explicit host which can be overridden later
     req.host = req.headers['host'].split(":")[0]
 
-    if req.ssl
-      req.port = 443
-    else
-      req.port = 80
     if isSecure(req)
       req.href = "https://" + req.headers['host'] + req.path
       req.ssl = true
+      req.port = 443
+      console.log(req.href)
     else
+      req.port = 80
       # Act as a completely transparent proxy
       if config.transparent
         # Helper property
@@ -74,17 +75,10 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     bodyLogger req
     next()
 
-  listenHTTPS: (port) ->
-    httpsProxy = require './https_proxy'
-    httpsProxy.createProxy(@middlewares).listen(port)
-
-  listen: (port) ->
-    super port
-    return this
-
   outboundProxy: (req, res, next) ->
     req.startTime = new Date
     passed_opts = {method:req.method, path:req.url, host:req.host, headers:req.headers, port:req.port}
+    console.log passed_opts
     upstream_processor = (upstream_res) ->
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode

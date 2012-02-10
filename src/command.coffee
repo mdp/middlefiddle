@@ -48,7 +48,6 @@ else
 
 # Middleware are passed both the MiddleFiddle object, and any additional arguments
 
-log.info("Starting HTTP Proxy on port #{Mf.config.httpPort}")
-log.info("Starting HTTPS Proxy on port #{Mf.config.httpsPort}")
-Mf.createProxy.apply(this, middleware).listen(Mf.config.httpPort).listenHTTPS(Mf.config.httpsPort)
+log.info("Starting HTTP Proxy on port #{Mf.config.port}")
+Mf.createProxy.apply(this, middleware).listen(Mf.config.port)
 

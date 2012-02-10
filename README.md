@@ -22,10 +22,17 @@ By default MiddleFiddle logs all outbound traffic to a web based logger on local
 
 ## Usage
 
-### Launch the basic logger
+### Using it from the command line
 
     mf logger
     # Now open http://localhost:8411
+    # Traffic matching the host in .middlefiddle/sites will be altered as well
+
+    # Only log for a certain URL
+    mf logger --url google.com
+
+    # Only log certain statuses
+    mf logger --status 404
 
 ## Configuration
 
@@ -40,7 +47,9 @@ MiddleFiddle can alter requests based on the host name. You'll find some example
 
 ## Building your own Middleware
 
-Coming soon
+If you want do modify requests and responses for all traffic, 
+
+MiddleFiddle middleware is connect compatible.
 
 ## HTTPS Hijacking
 
