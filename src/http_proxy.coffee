@@ -44,15 +44,21 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     res.mf ||= {}
     # Request now has an explicit host which can be overridden later
     req.host = req.headers['host'].split(":")[0]
+    req.port = req.headers['host'].split(":")[1]
 
     if isSecure(req)
+      # Helper property
       req.href = "https://" + req.headers['host'] + req.path
       req.ssl = true
-      req.port = 443
-      console.log(req.href)
+      req.port ||= 443
     else
-      req.port = 80
+      req.port ||= 80
+
       # Act as a completely transparent proxy
+      # This implies that the sender is unaware of the proxy,
+      # and being forced here from a network level redirect
+      # Therefore the request come in as a normal path
+      # Id est: '/' vs '/http://google.com'
       if config.transparent
         # Helper property
         req.href = "http://" + req.headers['host'] + req.url
@@ -78,7 +84,6 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
   outboundProxy: (req, res, next) ->
     req.startTime = new Date
     passed_opts = {method:req.method, path:req.url, host:req.host, headers:req.headers, port:req.port}
-    console.log passed_opts
     upstream_processor = (upstream_res) ->
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
