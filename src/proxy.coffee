@@ -24,6 +24,8 @@ class exports.Proxy extends HttpProxy
     port = match[2]
     certGenerator.build host, (tlsContext) =>
       pair = tls.createSecurePair(tlsContext, true, false, false)
+      pair.on 'error', (err) ->
+        console.log err
       httpServer = new http.Server
       httpServer.addListener 'request', @handle
       cleartext = pipe(pair, c)
