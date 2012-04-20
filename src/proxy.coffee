@@ -1,5 +1,4 @@
 net       = require('net')
-{Buffer}  = require('buffer')
 _         = require('underscore')
 tls       = require('tls')
 http      = require('http')
@@ -12,7 +11,7 @@ STATES =
   CONNECTING : 1,
   CONNECTED : 2
 
-exports.createProxy = (middlewares) ->
+exports.createProxy = (middlewares...) ->
   proxy = new exports.Proxy(middlewares)
   return proxy
 
@@ -37,27 +36,23 @@ class exports.Proxy extends HttpProxy
     httpServer.addListener 'request', @handle
     http._connectionListener.call(this, c)
     @httpAllowHalfOpen = false;
-    console.log(headers)
-    buffer = new Buffer(headers)
-    c.ondata buffer, 0, Buffer.byteLength(headers)
 
   listen: (port) ->
-    self = this
-    tlsServer = net.createServer (c) ->
+    tlsServer = net.createServer (c) =>
       headers = ''
       data = []
       state = STATES.UNCONNECTED
       c.addListener 'connect', ->
         state = STATES.CONNECTING
-      c.addListener 'data', (data) ->
+      c.addListener 'data', (data) =>
         if (state != STATES.CONNECTED)
           headers += data.toString()
           if headers.match("\r\n\r\n")
             state = STATES.CONNECTED
             if (headers.match(/^CONNECT/))
-              self.hijackSsl(headers, c)
+              @hijackSsl(headers, c)
             else
-              self.hijackHttp(headers, c)
+              @hijackHttp(headers, c)
     tlsServer.listen(port)
 
 

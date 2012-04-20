@@ -28,8 +28,10 @@ exports.createProxy = (middlewares...) ->
 exports.HttpProxy = class HttpProxy extends connect.HTTPServer
 
   constructor: (middlewares) ->
-    @middlewares ?= []
-    @middlewares = [middlewares] if _.isFunction middlewares
+    if _.isArray middlewares
+      @middlewares = middlewares
+    else
+      @middlewares = [middlewares]
     super @bookendedMiddleware()
 
   bookendedMiddleware: ->
