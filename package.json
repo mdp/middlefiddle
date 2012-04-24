@@ -1,6 +1,6 @@
 {
   "name": "middlefiddle",
-  "version": "0.2.2",
+  "version": "0.3.0",
   "description": "Middleware as a proxy for HTTP/HTTPS traffic",
   "keywords": ["proxy", "middleware", "connect"],
   "repository": "git://github.com/mdp/middlefiddle.git",
@@ -16,11 +16,8 @@
     "optimist": ">=0.3.0",
     "socket.io": ">=0.8.7"
   },
-  "scripts": {
-    "postinstall": "./node_modules/coffee-script/bin/coffee -o lib/ src/"
-  },
   "devDependencies": {
-    "vows": ">=0.6.0"
+    "mocha": ">=0.0.0"
   },
   "bin": {
     "mf": "./bin/mf"

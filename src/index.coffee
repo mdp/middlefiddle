@@ -7,10 +7,9 @@ exports.defaultFiddle = () ->
   require('./fiddles/sites')
 
 fs.readdirSync(__dirname + '/middleware').forEach (filename) ->
-  if (/\.js$/.test(filename))
-    name = filename.substr(0, filename.lastIndexOf('.'))
-    exports.__defineGetter__ name, ->
-      return require('./middleware/' + name)
+  name = filename.substr(0, filename.lastIndexOf('.'))
+  exports.__defineGetter__ name, ->
+    return require('./middleware/' + name)
 
 # HTTPS DNS lookup errors throw an exception which
 # it difficult to catch

@@ -1,2 +1,2 @@
-#!/usr/bin/env node
-require("../lib/command.js");
+#!/usr/bin/env coffee
+require "../src/command"

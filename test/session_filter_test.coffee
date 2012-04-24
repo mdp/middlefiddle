@@ -1,5 +1,5 @@
 assert = require 'assert'
-session_filter = require '../lib/session_filter'
+session_filter = require '../src/session_filter'
 mock_request = require './helpers/mock_request'
 mock_request.headers = {}
 
