@@ -1,7 +1,7 @@
 assert = require 'assert'
 fake_server = require './helpers/fake_server'
 http = require 'http'
-Mf = require '../lib/index'
+Mf = require '../src/index'
 Port = 15888
 Mf.createProxy().listen(Port)
 

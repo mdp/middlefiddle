@@ -16,12 +16,16 @@
     "optimist": ">=0.3.0",
     "socket.io": ">=0.8.7"
   },
+  "scripts": {
+    "postinstall": "node setup.js postinstall",
+    "test": "node setup.js test"
+  },
   "devDependencies": {
     "mocha": ">=0.0.0"
   },
   "bin": {
     "middlefiddle": "./bin/middlefiddle"
   },
-  "main": "./lib/index.js",
+  "main": "./src/index.coffee",
   "engines": { "node": ">= 0.6.0" }
 }
