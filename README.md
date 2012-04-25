@@ -12,6 +12,10 @@ By default MiddleFiddle logs all outbound traffic to a web based logger on local
 ![Request Logger](http://mdp.github.com/middlefiddle/images/RequestDetails.jpg)
 
 
+## Installtion
+
+    npm install -g middlefiddle
+
 ## Installation via Github
 
     # Depends on Node 0.6.x
@@ -22,23 +26,46 @@ By default MiddleFiddle logs all outbound traffic to a web based logger on local
 
 ## Usage
 
-### Using it from the command line
+### Basic usage
 
-    mf logger
+By default middlefiddle will start logging traffic and modifying
+requests based on site specific middleware found in '.middlefiddle/sites'
+
+You can find an example in 
+[.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
+
+    # Start middlefiddle with default options
+    middlefiddle
+    # Proxy will be at port 8080
+    # and the web logger will be open at port 8411
+
+### Using the logger
+
+    middlefiddle logger
     # Now open http://localhost:8411
-    # Traffic matching the host in .middlefiddle/sites will be altered as well
 
     # Only log for a certain URL
-    mf logger --url google.com
+    middlefiddle logger --url google.com
 
     # Only log certain statuses
-    mf logger --status 404
+    middlefiddle logger --status 404
+
+    # Only log responses containing text
+    middlefiddle logger --grep "setTimeout"
+    # Also work with regex
+    middlefiddle logger -r --grep "Mark(Percival)?"
+    # And case insensitive
+    middlefiddle logger -ri --grep "m@mdp\.im"
 
 ## Configuration
 
 MiddleFiddle looks for a .middlefiddle directory in the current working directory, or at ~/.middlefiddle.
 
 Inside you'll find a config.coffee file, https certs, and a sites directory.
+
+You'll need to add the https certs to you keychain if you want to avoid
+the browser warning. The certs are generated on the first launch of
+middlefiddle and are therefor unique to each machine.
 
 ### Sites
 

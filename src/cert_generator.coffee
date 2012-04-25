@@ -14,7 +14,7 @@ generateCerts = (host, callback) ->
     callback(currentCerts)
   else
     log.info("Generating certs for #{host}")
-    prc = spawn "#{__dirname}/bin/certgen.sh", [host, Date.now(), config.mfDir]
+    prc = spawn "#{__dirname}/../bin/certgen.sh", [host, Date.now(), config.mfDir]
     prc.on 'exit', (code, err) ->
       if code == 0
         callback getCerts(host)

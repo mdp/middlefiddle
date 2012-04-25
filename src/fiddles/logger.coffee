@@ -12,13 +12,17 @@ exports.middleware = (Mf, args) ->
     requestFilter.href = args.url
   if args.status
     responseFilter.statusCode = args.status
-  if args.contains
-    responseFilter.contains = args.contains
+  if args.grep
+    flags = 'g'
+    flags += 'i' if args.i
+    search = RegExp args.grep, flags
+    Mf.log.info "Searching for \"#{search}\""
+    responseFilter.contains = search
 
   [Mf.logger(requestFilter, responseFilter)]
 
 checkArguments = (args) ->
-  validArguments = ['contains', 'url', 'status']
+  validArguments = ['grep', 'url', 'status']
   for prop, val of args
     if prop.search(/^[a-zA-Z0-9]+$/) >= 0
       if validArguments.indexOf(prop)
