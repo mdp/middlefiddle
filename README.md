@@ -67,22 +67,25 @@ You'll need to add the https certs to you keychain if you want to avoid
 the browser warning. The certs are generated on the first launch of
 middlefiddle and are therefor unique to each machine.
 
+## Building your own Middleware
+
 ### Sites
 
 MiddleFiddle can alter requests based on the host name. You'll find some examples in
 [.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
 
-## Building your own Middleware
-
 MiddleFiddle middleware is connect compatible. Anything you can do with
 Connect, you can do with middlefiddle middleware.
+
+Simply place the domain named file in ~/.middlefiddle/sites and it will
+automatically be used
 
 ### Saving any mp3's from a site
 
 For example, lets say you want to save all the streamed mp3's from
 Soundcloud.com
 
-*Found in soundcloud.com.cofffee*
+*Found in [soundcloud.com.coffee](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites/soundcloud.com.coffee)*
 
     fs = require 'fs'
     module.exports = (Mf) ->
@@ -99,7 +102,7 @@ Soundcloud.com
 
 In this case we used the MiddleFiddle helper 'replace'
 
-*Found in github.com.cofffee*
+*Found in [github.com.coffee](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites/github.com.coffee)*
 
     module.exports = (Mf) ->
       replacement = (string, req, res) ->
@@ -114,7 +117,7 @@ In this case we used the MiddleFiddle helper 'replace'
 
 Here we are going to change the user agent to GoogleBot
 
-*Found in ft.com.cofffee*
+*Found in [ft.com.coffee](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites/ft.com.coffee)*
 
     module.exports = (Mf) ->
       # I'm the Google, let me in!
