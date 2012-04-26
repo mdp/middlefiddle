@@ -72,16 +72,10 @@ longFormat = (req, res) ->
     "#{key}: #{val}"
   res_headers = for key, val of res.headers
     "#{key}: #{val}"
-  responseContent = ''
-  requestContent = ''
-  for buffer in req.body
-    requestContent += buffer.toString('utf-8')
-    break if requestContent.length > 100000
+  requestContent = req.body.toString('utf-8')
   unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
-    responseContent = ''
-    for buffer in res.body
-      responseContent += buffer.toString('utf-8')
-      break if responseContent.length > 100000
+    responseContent = res.body.toString('utf-8')
+
   request:
     url: req.href
     method: req.method

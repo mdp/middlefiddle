@@ -1,2 +1,3 @@
-#!/usr/bin/env coffee
-require "../src/command"
+#!/usr/bin/env node
+require("coffee-script")
+require("../src/command")

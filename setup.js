@@ -1,5 +1,8 @@
 var exec = require('child_process').exec;
 var sysPath = require('path');
+var mkdirp = require('mkdirp');
+var fs = require('fs');
+var util = require("util");
 
 var mode = process.argv[2];
 
@@ -14,8 +17,19 @@ var execute = function(pathParts, params, callback) {
   });
 };
 
+var copy = function(path, targetPath) {
+  var target = fs.createWriteStream(targetPath);
+  var original = fs.createReadStream(path);
+  target.once('open', function(fd){
+      util.pump(original, target);
+  });
+}
+
 if (mode === 'postinstall') {
   console.log("Creating .middlefiddle home directory");
+  mkdirp.sync(process.env["HOME"] + "/.middlefiddle");
+  mkdirp.sync(process.env["HOME"] + "/.middlefiddle/sites");
+  copy(__dirname + "/.middlefiddle/config.json", process.env["HOME"] + "/.middlefiddle/config.json");
 } else if (mode === 'test') {
   execute(['node_modules', 'mocha', 'bin', 'mocha'],
     '--compilers coffee:coffee-script test/*.coffee');

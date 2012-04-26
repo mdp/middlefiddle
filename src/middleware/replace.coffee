@@ -20,13 +20,10 @@ exports = module.exports = (replacer, filter) ->
       if res.isBinary
         res.headers['content-length'] = res.length
         writeHead.call(res, res.statusCode, res.headers)
-        for b in res.body
-          write.call(res, b)
+        write.call(res, res.body) if res.length > 0
         end.call(res)
       else
-        content = ''
-        for b in res.body
-          content += b.toString('utf-8')
+        content = res.body.toString('utf-8')
 
         # Can return false if no action needs to be taken
         replacedContent = replacer(content, req, res)

@@ -80,7 +80,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     res.addHeader = addHeader
     res.removeHeader = removeHeader
     res.modifyHeaders = modifyHeaders
-    bodyLogger req
+    bodyLogger req, 'request'
     next()
 
   outboundProxy: (req, res, next) ->
@@ -98,7 +98,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         res.isBinary = true
 
       # Store body data with the response
-      bodyLogger(res)
+      bodyLogger(res, 'response')
 
       res.writeHead(upstream_res.statusCode, upstream_res.headers)
       upstream_res.on 'data', (chunk) ->
@@ -143,15 +143,27 @@ modifyHeaders = () ->
     for header in @removedHeaders
       delete @headers[header]
 
-bodyLogger = (stream, callback) ->
+bodyLogger = (stream, type, callback) ->
+  data = []
+  assembleBody = ->
+    stream.body = new Buffer(stream.length)
+    offset = 0
+    for buffer in data
+      buffer.copy(stream.body, offset)
+      offset += buffer.length
+    delete data
   callback ||= () ->
+    assembleBody()
     stream.emit 'body'
-  stream.body = []
+    if type == 'response'
+      log.debug("Captured #{stream.body.length} bytes from #{stream.headers["server"]}")
+  length = parseInt(stream.headers['content-length'], 10) || 0
+  stream.body = new Buffer(parseInt(stream.headers['content-length'], 10))
   stream.length = 0
   unzipper = zlib.createUnzip()
-  unzipper.on 'data', (data) ->
-    stream.length += data.length
-    stream.body.push(data)
+  unzipper.on 'data', (datum) ->
+    data.push(datum)
+    stream.length += datum.length
   unzipper.on 'end', ->
     callback()
   switch (stream.headers['content-encoding'])
@@ -164,9 +176,9 @@ bodyLogger = (stream, callback) ->
       stream.pipe(unzipper)
       break
     else
-      stream.on 'data', (data)->
-        stream.body.push(data)
-        stream.length += data.length
-      stream.on 'end', ()->
+      stream.on 'data', (datum)->
+        data.push datum
+        stream.length += datum.length
+      stream.on 'end', ->
         callback()
       break
