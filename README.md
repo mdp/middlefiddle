@@ -74,9 +74,54 @@ MiddleFiddle can alter requests based on the host name. You'll find some example
 
 ## Building your own Middleware
 
-If you want do modify requests and responses for all traffic, 
+MiddleFiddle middleware is connect compatible. Anything you can do with
+Connect, you can do with middlefiddle middleware.
 
-MiddleFiddle middleware is connect compatible.
+### Saving any mp3's from a site
+
+For example, lets say you want to save all the streamed mp3's from
+Soundcloud.com
+
+*Found in soundcloud.com.cofffee*
+
+    fs = require 'fs'
+    module.exports = (Mf) ->
+      (req, res, next) ->
+        res.on 'body', ->
+          if res.headers["content-type"] == 'audio/mpeg'
+            fileName = req.path.replace(/^[a-zA-Z]/, '').split('.')[0]
+            path = "#{process.env["HOME"]}/Downloads/soundcloud#{fileName}.mp3"
+            fs.writeFile path, res.body, ->
+              console.log "Saved #{res.body.length} bytes to #{path}"
+        next()
+
+### Find and replace any text
+
+In this case we used the MiddleFiddle helper 'replace'
+
+*Found in github.com.cofffee*
+
+    module.exports = (Mf) ->
+      replacement = (string, req, res) ->
+        contentType = res.headers['content-type'] || ''
+        if contentType.search(/html/) >= 0
+          string.replace(/repositories/ig, "suppositories")
+        else
+          false
+      return  Mf.replace(replacement)
+
+### Modify outbound request headers
+
+Here we are going to change the user agent to GoogleBot
+
+*Found in ft.com.cofffee*
+
+    module.exports = (Mf) ->
+      # I'm the Google, let me in!
+      (req, res, next) ->
+        req.headers['user-agent'] = "GoogleBot"
+        next()
+
 
 ## HTTPS Hijacking
 
