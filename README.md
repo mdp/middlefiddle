@@ -4,14 +4,6 @@ MiddleFiddle is an outbound local proxy which lets to modify your outbound reque
 via [Connect](http://senchalabs.github.com/connect/) middleware. It support HTTP and HTTPS, the
 latter through a hijacking of the request with locally generated SSL certs.
 
-## Web Logging
-
-By default MiddleFiddle logs all outbound traffic to a web based logger on localhost:8411
-
-![Request Logger](http://mdp.github.com/middlefiddle/images/RequestLogger.jpg)
-![Request Logger](http://mdp.github.com/middlefiddle/images/RequestDetails.jpg)
-
-
 ## Installtion
 
     npm install -g middlefiddle
@@ -57,28 +49,21 @@ You can find an example in
     # And case insensitive
     middlefiddle logger -ri --grep "m@mdp\.im"
 
-## Configuration
-
-MiddleFiddle looks for a .middlefiddle directory in the current working directory, or at ~/.middlefiddle.
-
-Inside you'll find a config.coffee file, https certs, and a sites directory.
-
-You'll need to add the https certs to you keychain if you want to avoid
-the browser warning. The certs are generated on the first launch of
-middlefiddle and are therefor unique to each machine.
-
-## Building your own Middleware
-
-### Sites
+## Site specific middleware
 
 MiddleFiddle can alter requests based on the host name. You'll find some examples in
 [.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
 
+Simple add the middleware to your ~/.middlefiddle/sites directory, with
+the appropriate hostname. For example,
+'~/.middlefiddle/sites/github.com.coffee' would get injected on any
+request to github.com 
+
 MiddleFiddle middleware is connect compatible. Anything you can do with
 Connect, you can do with middlefiddle middleware.
 
-Simply place the domain named file in ~/.middlefiddle/sites and it will
-automatically be used
+### Examples
+----
 
 ### Saving any mp3's from a site
 
@@ -124,6 +109,24 @@ Here we are going to change the user agent to GoogleBot
       (req, res, next) ->
         req.headers['user-agent'] = "GoogleBot"
         next()
+
+## Web Logging
+
+By default MiddleFiddle logs all outbound traffic to a web based logger on localhost:8411
+
+![Request Logger](http://mdp.github.com/middlefiddle/images/RequestLogger.jpg)
+![Request Logger](http://mdp.github.com/middlefiddle/images/RequestDetails.jpg)
+
+
+## Configuration
+
+MiddleFiddle looks for a .middlefiddle directory in the current working directory, or at ~/.middlefiddle.
+
+Inside you'll find a config.coffee file, https certs, and a sites directory.
+
+You'll need to add the https certs to you keychain if you want to avoid
+the browser warning. The certs are generated on the first launch of
+middlefiddle and are therefor unique to each machine.
 
 
 ## HTTPS Hijacking
