@@ -148,6 +148,13 @@ You've also got a couple helper properties:
 - req.fullUrl #=> The full requested URL, including the schema
 - req.isSecure #=> Did it come via SSL?
 
+## Testing
+
+Tests can be run from within the repo
+
+    npm install
+    npm test
+
 ## TODO
 
 - Clean up cert generation

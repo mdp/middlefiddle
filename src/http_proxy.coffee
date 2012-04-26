@@ -151,7 +151,7 @@ bodyLogger = (stream, type, callback) ->
     for buffer in data
       buffer.copy(stream.body, offset)
       offset += buffer.length
-    delete data
+    data = null
   callback ||= () ->
     assembleBody()
     stream.emit 'body'
