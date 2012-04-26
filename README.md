@@ -54,10 +54,9 @@ You can find an example in
 MiddleFiddle can alter requests based on the host name. You'll find some examples in
 [.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
 
-Simple add the middleware to your ~/.middlefiddle/sites directory, with
-the appropriate hostname. For example,
-'~/.middlefiddle/sites/github.com.coffee' would get injected on any
-request to github.com 
+Simple add the middleware to your _~/.middlefiddle/sites_ directory, with
+the appropriate hostname. For example, _~/.middlefiddle/sites/github.com.coffee'_
+would get injected on any request to github.com 
 
 MiddleFiddle middleware is connect compatible. Anything you can do with
 Connect, you can do with middlefiddle middleware.
