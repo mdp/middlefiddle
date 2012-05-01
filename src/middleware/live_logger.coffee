@@ -12,10 +12,10 @@ createServer = (callback) ->
   app = express.createServer()
   io = io.listen(app, {"log level": 0})
   app.configure ->
-    app.use express.static(__dirname + '/../../logger/public')
+    app.use express.static(__dirname + '/live_logger/public')
 
   app.get '/', (req, res) ->
-    index = require('fs').readFileSync(__dirname + '/../../logger/index.html')
+    index = require('fs').readFileSync(__dirname + '/live_logger/index.html')
     res.send index.toString(), 200
 
   app.get '/all', (req, res) ->
@@ -73,6 +73,7 @@ longFormat = (req, res) ->
   res_headers = for key, val of res.headers
     "#{key}: #{val}"
   requestContent = req.body.toString('utf-8')
+  console.log requestContent
   unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
     responseContent = res.body.toString('utf-8')
 

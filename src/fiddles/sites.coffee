@@ -46,6 +46,9 @@ loadSiteMiddleware = (site) ->
 
 exports.middleware = () ->
   loadMiddlewares()
+  middlewares = [Mf.live_logger()]
+  if defMiddleware = siteMiddlewares['default']
+    middlewares.push defMiddleware(Mf)
 
   siteMiddleware = (req, res, next) ->
     middleware = null
@@ -54,12 +57,9 @@ exports.middleware = () ->
         Mf.log.debug("Fiddling with #{req.host}")
         middleware = m(Mf)
         break
-    if _.isArray(middleware)
-      for m in middleware
-        m(req, res, next)
-    else if middleware
+    if middleware
       middleware(req, res, next)
     else
-      return next()
-
-  return [Mf.logger(), siteMiddleware]
+      next()
+  middlewares.push siteMiddleware
+  middlewares

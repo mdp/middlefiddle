@@ -17,4 +17,4 @@ exports = module.exports = (options) ->
     next()
 
 fmt = (req, res) ->
-  "#{res.statusCode} - #{req.fullUrl}"
+  "#{res.statusCode} - #{req.href}"

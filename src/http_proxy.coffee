@@ -122,7 +122,7 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       upstream_request = http.request passed_opts, upstream_processor
 
     upstream_request.on 'error', (err)->
-      log.error("Fail - #{req.method} - #{req.fullUrl}")
+      log.error("Upstream Fail - #{req.method} - #{req.href}")
       log.error(err)
       res.end()
     upstream_request.end()
