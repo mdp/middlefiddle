@@ -31,6 +31,7 @@ log.debug("Checking the following locations")
 log.debug(fiddlePaths)
 
 activeFiddle = null
+middleware = []
 if process.argv.length > 2
   for fiddlePath in fiddlePaths
     testPath = fiddlePath + "/" + process.argv[2]
@@ -40,14 +41,16 @@ if process.argv.length > 2
   if activeFiddle == null
     log.error("Can't find a fiddle named '#{process.argv[2]}'. Looked in: " + fiddlePaths)
     process.exit -1
-  middleware = require(activeFiddle).middleware(Mf, passedArgs)
+  middleware = middleware.concat require(activeFiddle).middleware(Mf, passedArgs)
 
 else
   # Default to the 'sites' fiddle for now
-  middleware = Mf.defaultFiddle().middleware()
+  middleware = middleware.concat Mf.defaultFiddle().middleware()
 
 # Middleware are passed both the MiddleFiddle object, and any additional arguments
 
 log.info("Starting HTTP Proxy on port #{Mf.config.port}")
+unless Array.isArray middleware
+  middleware = [middleware]
 Mf.createProxy.apply(this, middleware).listen(Mf.config.port)
 

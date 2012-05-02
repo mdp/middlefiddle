@@ -51,15 +51,16 @@ exports.middleware = () ->
     middlewares.push defMiddleware(Mf)
 
   siteMiddleware = (req, res, next) ->
-    middleware = null
+    middlewares = []
     for key, m of siteMiddlewares
       if req.host.match(key)
-        Mf.log.debug("Fiddling with #{req.host}")
-        middleware = m(Mf)
+        Mf.log.debug("Fiddling with #{req.host} using #{key}")
+        middlewares = middlewares.concat m(Mf)
         break
-    if middleware
-      middleware(req, res, next)
+    if middlewares.length > 0
+      for m in middlewares
+        m(req, res, next)
     else
       next()
-  middlewares.push siteMiddleware
-  middlewares
+
+  siteMiddleware

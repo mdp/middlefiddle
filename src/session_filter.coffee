@@ -30,7 +30,7 @@ exports.matches = matches = (filter, session) ->
   match = false
   for key, test of filter
     if session[key]
-      if _.isArray(test)
+      if Array.isArray(test)
         for t in test
           if check(session[key], t)
             match = true
