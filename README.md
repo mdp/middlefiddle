@@ -6,15 +6,15 @@ latter through a hijacking of the request with locally generated SSL certs.
 
 ## Installtion
 
-    npm install -g middlefiddle
+    $ npm install -g middlefiddle
 
 ## Installation via Github
 
     # Depends on Node 0.6.x
-    git clone git://github.com/mdp/middlefiddle.git
-    cd middlefiddle
-    npm install
-    npm link #If you want to use it globally
+    $ git clone git://github.com/mdp/middlefiddle.git
+    $ cd middlefiddle
+    $ npm install
+    $ npm link #If you want to use it globally
 
 ## Usage
 
@@ -27,27 +27,27 @@ You can find an example in
 [.middlefiddle/sites](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites)
 
     # Start middlefiddle with default options
-    middlefiddle
+    $ middlefiddle
     # Proxy will be at port 8080
     # and the web logger will be open at port 8411
 
 ### Using the logger
 
-    middlefiddle logger
+    $ middlefiddle logger
     # Now open http://localhost:8411
 
     # Only log for a certain URL
-    middlefiddle logger --url google.com
+    $ middlefiddle logger --url google.com
 
     # Only log certain statuses
-    middlefiddle logger --status 404
+    $ middlefiddle logger --status 404
 
     # Only log responses containing text
-    middlefiddle logger --grep "setTimeout"
+    $ middlefiddle logger --grep "setTimeout"
     # Also work with regex
-    middlefiddle logger -r --grep "Mark(Percival)?"
+    $ middlefiddle logger -r --grep "Mark(Percival)?"
     # And case insensitive
-    middlefiddle logger -ri --grep "m@mdp\.im"
+    $ middlefiddle logger -ri --grep "m@mdp\.im"
 
 ## Site specific middleware
 
