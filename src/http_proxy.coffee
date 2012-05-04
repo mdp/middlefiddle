@@ -166,6 +166,9 @@ bodyLogger = (stream, type, callback) ->
     stream.length += datum.length
   unzipper.on 'end', ->
     callback()
+  unzipper.destroy = ->
+    console.log stream.href
+    console.log stream.headers
   switch (stream.headers['content-encoding'])
     when 'gzip'
       log.debug("Unzipping")

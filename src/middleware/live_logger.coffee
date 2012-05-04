@@ -73,7 +73,6 @@ longFormat = (req, res) ->
   res_headers = for key, val of res.headers
     "#{key}: #{val}"
   requestContent = req.body.toString('utf-8')
-  console.log requestContent
   unless res.headers['content-type'] && res.headers['content-type'].match(impracticalMimeTypes)
     responseContent = res.body.toString('utf-8')
 

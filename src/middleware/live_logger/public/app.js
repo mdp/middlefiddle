@@ -137,7 +137,6 @@ $(function(){
       });
       this.Requests.bind('reset', function(models){
         _.each(models.models, function(model){
-          console.log(model);
           var view = new RequestView({model: model});
           $("ul#requests").append(view.render().el);
         });

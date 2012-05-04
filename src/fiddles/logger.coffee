@@ -19,7 +19,7 @@ exports.middleware = (Mf, args) ->
     Mf.log.info "Searching for \"#{search}\""
     responseFilter.contains = search
 
-  [Mf.logger(requestFilter, responseFilter)]
+  [Mf.live_logger(requestFilter, responseFilter)]
 
 checkArguments = (args) ->
   validArguments = ['grep', 'url', 'status']
