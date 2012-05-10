@@ -29,7 +29,6 @@ You can find an example in
     # Start middlefiddle with default options
     $ middlefiddle
     # Proxy will be at port 8080
-    # and the web logger will be open at port 8411
 
 ### Using the logger
 
