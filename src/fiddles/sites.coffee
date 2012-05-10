@@ -46,7 +46,7 @@ loadSiteMiddleware = (site) ->
 
 exports.middleware = () ->
   loadMiddlewares()
-  middlewares = [Mf.live_logger()]
+  middlewares = []
   if defMiddleware = siteMiddlewares['default']
     middlewares.push defMiddleware(Mf)
 
