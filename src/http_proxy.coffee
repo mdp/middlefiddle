@@ -77,9 +77,6 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         # Helper property
         req.href = proxyUrl.href
 
-    res.addHeader = addHeader
-    res.removeHeader = removeHeader
-    res.modifyHeaders = modifyHeaders
     bodyLogger req, 'request'
     next()
 
@@ -90,17 +87,18 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       # Helpers for easier logging upstream
       res.statusCode = upstream_res.statusCode
       res.headers = upstream_res.headers
-      res.modifyHeaders()
 
       if res.headers && res.headers['content-type'] && res.headers['content-type'].search(/(text)|(application)/) >= 0
         res.isBinary = false
       else
         res.isBinary = true
 
+      res.emit 'headers', res.headers
+
       # Store body data with the response
       bodyLogger(res, 'response')
 
-      res.writeHead(upstream_res.statusCode, upstream_res.headers)
+      res.writeHead(res.statusCode, res.headers)
       upstream_res.on 'data', (chunk) ->
         res.write(chunk, 'binary')
         res.emit 'data', chunk
@@ -126,22 +124,6 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
       log.error(err)
       res.end()
     upstream_request.end()
-
-addHeader = (header, value) ->
-  @addedHeaders ||= []
-  @addedHeaders.push([header, value])
-
-removeHeader = (header) ->
-  @removedHeaders ||= []
-  @removedHeaders.push(header)
-
-modifyHeaders = () ->
-  if @addedHeaders
-    for header in @addedHeaders
-      @headers[header[0]] = header[1]
-  if @removedHeaders
-    for header in @removedHeaders
-      delete @headers[header]
 
 bodyLogger = (stream, type, callback) ->
   data = []

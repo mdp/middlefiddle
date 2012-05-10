@@ -1,7 +1,8 @@
 module.exports = (Mf) ->
   ua = (req, res, next) ->
     req.headers['user-agent'] = "GoogleBotZ"
-    res.addHeader("server", "Apachame")
+    res.on 'headers', (headers) ->
+      headers['server'] = "Apache"
     next()
 
   replace = (string, req, res) ->

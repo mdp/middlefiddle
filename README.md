@@ -140,13 +140,42 @@ just for your machine, so you won't be compromising your browser security.
 
 ## Things to note
 
-Connect typically doesn't have a simple way to hijack downstream responses, so
+Connect typically doesn't have a simple way to hijack downstream responses since it's streaming, so
 middlefiddle emits events on the response along with writing to the stream.
+
+    res.on 'data', (chunk) ->
+      console.log chunk.toString()
+
+    res.on 'end', (chunk) ->
+      console.log chunk.toString()
+
+    res.on 'close', (chunk) ->
+      console.log "Closed response"
 
 You've also got a couple helper properties:
 
-- req.fullUrl #=> The full requested URL, including the schema
-- req.isSecure #=> Did it come via SSL?
+- req.href #=> String: The full requested URL, including the scheme,
+  host, path, and query params
+- req.ssl #=> Boolean: Did it come via SSL?
+- req.startTime #=> Datetime: When the request was started
+- res.endTime #=> Datetime: I'll let you guess
+
+## Modify responses
+
+### Modifying the headers
+
+Response headers can be modified before they are sent to the browser.
+Just wait till they're available:
+
+*Example in [add_csp.coffee](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/fiddles/add_csp.coffee)*
+
+### Replace the response body
+
+Modifying the a response body means buffering the stream,
+waiting for it to finish, then making the replacement and sending it
+back downstream. The 'replace' middleware provides this.
+
+* Usage example in [github.com.coffee](https://github.com/mdp/middlefiddle/tree/master/.middlefiddle/sites/github.com.coffee)*
 
 ## Testing
 
