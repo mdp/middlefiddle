@@ -108,8 +108,9 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
         res.emit 'end'
       upstream_res.on 'close', ->
         res.emit 'close'
-      upstream_res.on 'error', ->
-        res.abort()
+      upstream_res.on 'error', (err) ->
+        log.error("Upstream Response Error - #{err}")
+        res.emit 'close'
     req.on 'data', (chunk) ->
       upstream_request.write(chunk)
     req.on 'error', (error) ->
@@ -122,7 +123,6 @@ exports.HttpProxy = class HttpProxy extends connect.HTTPServer
     upstream_request.on 'error', (err)->
       log.error("Upstream Fail - #{req.method} - #{req.href}")
       log.error(err)
-      res.end()
     upstream_request.end()
 
 bodyLogger = (stream, type, callback) ->
@@ -138,7 +138,7 @@ bodyLogger = (stream, type, callback) ->
     assembleBody()
     stream.emit 'body'
     if type == 'response'
-      log.debug("Captured #{stream.body.length} bytes from #{stream.headers["server"]}")
+      log.debug("Captured #{stream.body.length} bytes from #{stream.statusCode}")
   length = parseInt(stream.headers['content-length'], 10) || 0
   stream.body = new Buffer(parseInt(stream.headers['content-length'], 10))
   stream.length = 0
