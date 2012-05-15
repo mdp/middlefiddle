@@ -46,11 +46,11 @@ loadSiteMiddleware = (site) ->
 
 exports.middleware = () ->
   loadMiddlewares()
-  middlewares = []
-  if defMiddleware = siteMiddlewares['default']
-    middlewares.push defMiddleware(Mf)
 
   siteMiddleware = (req, res, next) ->
+    middlewares = []
+    if defMiddleware = siteMiddlewares['default']
+      middlewares.push defMiddleware(Mf)
     for key, m of siteMiddlewares
       if req.host.match(key)
         Mf.log.debug("Fiddling with #{req.host} using #{key}")
