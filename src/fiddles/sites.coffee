@@ -46,7 +46,7 @@ loadSiteMiddleware = (site) ->
 
 exports.middleware = () ->
   loadMiddlewares()
-  middlewares = [Mf.live_logger()]
+  middlewares = []
   if defMiddleware = siteMiddlewares['default']
     middlewares.push defMiddleware(Mf)
 
@@ -57,14 +57,14 @@ exports.middleware = () ->
         middlewares = middlewares.concat m(Mf)
         break
     nextMw = (i) ->
-      if n = middlewares[i+1]
-        -> n(req, res, nextMw())
+      if n = middlewares[i]
+        -> n(req, res, nextMw(i+1))
       else
-        next
+        -> next()
     if middlewares.length > 0
-      for i in [0..middlewares.length-1]
-        middlewares[i](req, res, nextMw(i))
+      nextMw(0)()
     else
       next()
 
-  siteMiddleware
+  [siteMiddleware, Mf.live_logger()]
+  return [siteMiddleware]

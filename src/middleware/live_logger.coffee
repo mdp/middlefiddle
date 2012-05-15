@@ -4,7 +4,7 @@ ringBuffer = require('../utils/ringbuffer').create(100)
 log = require '../logger'
 sessionFilter = require '../session_filter'
 config = require '../config'
-currentSocket = null 
+currentSocket = null
 # Things I don't want to dump into the content field
 impracticalMimeTypes = /^(image|audio|video)\//
 
@@ -46,7 +46,8 @@ exports = module.exports = (requestFilter, responseFilter) ->
 
   return (req, res, next) ->
     unless sessionFilter.matches(requestFilter, req)
-      return next()
+      next()
+      return
     # Wait till we have the body unzipped and processed
     res.on 'body', () ->
       if sessionFilter.matches(responseFilter, res)
