@@ -67,4 +67,3 @@ exports.middleware = () ->
       next()
 
   [siteMiddleware, Mf.live_logger()]
-  return [siteMiddleware]
