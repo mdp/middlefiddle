@@ -130,7 +130,7 @@ middlefiddle and are therefor unique to each machine.
 ## HTTPS Hijacking
 
 When an HTTPS request is first seen, MiddleFiddle generates a certificate for that domain, signs
-it with it's own generated root cert, and stores the cert for future use in
+it with its own generated root cert, and stores the cert for future use in
 ~/.middlefiddle/certs
 
 In order to make this look legit to your browser, you'll need to add the generated
