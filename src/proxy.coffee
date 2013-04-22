@@ -3,7 +3,7 @@ net       = require('net')
 _         = require('underscore')
 tls       = require('tls')
 http      = require('http')
-{HttpProxy} = require('./http_proxy')
+{proxyHandler} = require('./proxy_handler')
 certGenerator = require('./cert_generator')
 log = require("./logger")
 
@@ -12,55 +12,54 @@ STATES =
   CONNECTING : 1,
   CONNECTED : 2
 
-exports.createProxy = (middlewares) ->
-  proxy = new exports.Proxy(middlewares)
+exports.createServer = (middlewares) ->
+  proxy = new Proxy(middlewares)
   return proxy
 
-# Handles both HTTP and HTTPS connections
-class exports.Proxy extends HttpProxy
 
-  hijackSsl: (headers, c) ->
-    match = headers.match("CONNECT +([^:]+):([0-9]+).*")
-    host = match[1]
-    port = match[2]
-    certGenerator.build host, (tlsContext) =>
-      pair = tls.createSecurePair(tlsContext, true, false, false)
-      httpServer = new http.Server
-      httpServer.addListener 'request', @handle
-      cleartext = pipe(pair, c)
-      http._connectionListener.call(this, cleartext)
-      @httpAllowHalfOpen = false;
-      c.write("HTTP/1.0 200 Connection established\r\nProxy-agent: MiddleFiddle\r\n\r\n")
+Proxy = (middlewares) ->
+  self = this
+  @httpServer = http.createServer(proxyHandler(middlewares))
+  @server = net.createServer (c) ->
+    headers = ''
+    data = []
+    state = STATES.UNCONNECTED
+    c.addListener 'connect', ->
+      state = STATES.CONNECTING
+    c.addListener 'data', (data) ->
+      if (state != STATES.CONNECTED)
+        headers += data.toString()
+        if headers.match("\r\n\r\n")
+          state = STATES.CONNECTED
+          if (headers.match(/^CONNECT/))
+            self.hijackSsl(headers, c)
+          else
+            self.hijackHttp(headers, c)
 
-  hijackHttp: (headers, c) ->
-    httpServer = new http.Server
-    httpServer.addListener 'request', @handle
-    http._connectionListener.call(this, c)
-    @httpAllowHalfOpen = false;
-    console.log(headers)
-    buffer = new Buffer(headers)
-    c.ondata buffer, 0, Buffer.byteLength(headers)
-
-  listen: (port) ->
-    self = this
-    tlsServer = net.createServer (c) ->
-      headers = ''
-      data = []
-      state = STATES.UNCONNECTED
-      c.addListener 'connect', ->
-        state = STATES.CONNECTING
-      c.addListener 'data', (data) ->
-        if (state != STATES.CONNECTED)
-          headers += data.toString()
-          if headers.match("\r\n\r\n")
-            state = STATES.CONNECTED
-            if (headers.match(/^CONNECT/))
-              self.hijackSsl(headers, c)
-            else
-              self.hijackHttp(headers, c)
-    tlsServer.listen(port)
+Proxy.prototype.listen = (port, callback) ->
+  @server.listen(port, callback)
 
 
+Proxy.prototype.hijackSsl = (headers, c) ->
+  match = headers.match("CONNECT +([^:]+):([0-9]+).*")
+  host = match[1]
+  port = match[2]
+  certGenerator.build host, (tlsContext) =>
+    pair = tls.createSecurePair(tlsContext, true, false, false)
+    @httpServer.httpAllowHalfOpen = false;
+    http._connectionListener.call(@httpServer, pair.cleartext)
+    pair.encrypted.pipe(c)
+    c.pipe(pair.encrypted)
+    c.write("HTTP/1.0 200 Connection established\r\nProxy-agent: MiddleFiddle\r\n\r\n")
+
+Proxy.prototype.hijackHttp = (headers, c) ->
+  @httpServer.httpAllowHalfOpen = false;
+  http._connectionListener.call(@httpServer,c)
+  buffer = new Buffer(headers)
+  c.ondata buffer, 0, Buffer.byteLength(headers)
+
+
+# TODO: Thing probably still needs to be used to prevent errors from bubling up
 pipe = (pair, socket) ->
   pair.encrypted.pipe(socket)
   socket.pipe(pair.encrypted)

@@ -29,6 +29,7 @@ proto =
     next()
 
 inbound = (req, res, next) ->
+  console.log "request inbound"
   res.downstream = res
   res.transform = (stream) ->
     stream.pipe(res.downstream)
@@ -39,7 +40,10 @@ inbound = (req, res, next) ->
   next()
 
 outbound = (req, res) ->
+  console.log "request outbound #{req.url}"
+  prepRequest(req)
   destUrl = url.parse(req.url)
+  console.log destUrl
   options =
     port: destUrl.port
     hostname: destUrl.hostname
@@ -52,4 +56,14 @@ outbound = (req, res) ->
     res.emit 'response', uRes
     res.writeHead(uRes.statusCode, uRes.headers)
     uRes.pipe(res.downstream)
+
+prepRequest = (req) ->
+  if req.connection?.pair?.ssl
+    console.log "SSL"
+    host = req.headers['host']
+    destUrl = url.parse("https://" + host + req.url)
+    console.log destUrl
+    req.url = destUrl
+  else
+    console.log "HTTP"
 

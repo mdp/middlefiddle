@@ -1,5 +1,4 @@
 fs        = require('fs')
-path      = require('path')
 {spawn}   = require('child_process')
 chainGang = require('chain-gang')
 chain     = chainGang.create({workers: 1})
@@ -14,7 +13,7 @@ generateCerts = (host, callback) ->
     callback(currentCerts)
   else
     log.info("Generating certs for #{host}")
-    prc = spawn "#{__dirname}/bin/certgen.sh", [host, Date.now(), config.mfDir]
+    prc = spawn "#{__dirname}/../lib/bin/certgen.sh", [host, Date.now(), config.mfDir]
     prc.on 'exit', (code, err) ->
       if code == 0
         callback getCerts(host)
@@ -24,7 +23,7 @@ generateCerts = (host, callback) ->
 
 CERTS_DIR = "#{config.mfDir}/certs"
 getCerts = (host) ->
-  if path.existsSync("#{CERTS_DIR}/#{host}.key") && path.existsSync("#{CERTS_DIR}/#{host}.crt")
+  if fs.existsSync("#{CERTS_DIR}/#{host}.key") && fs.existsSync("#{CERTS_DIR}/#{host}.crt")
     tlsOptions =
       key: fs.readFileSync("#{CERTS_DIR}/#{host}.key"),
       cert: fs.readFileSync("#{CERTS_DIR}/#{host}.crt"),
