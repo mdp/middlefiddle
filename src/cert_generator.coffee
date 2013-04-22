@@ -1,11 +1,10 @@
 fs        = require('fs')
 {spawn}   = require('child_process')
-chainGang = require('chain-gang')
-chain     = chainGang.create({workers: 1})
+async     = require 'async'
 log       = require './logger'
 config       = require './config'
 
-generateCerts = (host, callback) ->
+_generateCerts = (host, callback) ->
   # TODO: Make async
   currentCerts = getCerts(host)
   if currentCerts
@@ -21,6 +20,9 @@ generateCerts = (host, callback) ->
         log.error(err)
         callback getCerts(host)
 
+# Prevents a double gen'd cert
+generateCerts = async.memoize(_generateCerts)
+
 CERTS_DIR = "#{config.mfDir}/certs"
 getCerts = (host) ->
   if fs.existsSync("#{CERTS_DIR}/#{host}.key") && fs.existsSync("#{CERTS_DIR}/#{host}.crt")
@@ -35,18 +37,9 @@ getCerts = (host) ->
     return false
 
 exports.build = (host, tlsCallback) ->
-  # Using Chaingang to prevent the forked
-  # bash script from creating the same cert at the same time
-  # Hacky, but it works
   # TODO: Gen and sign certs using native Node Openssl hooks
   if tlsSettings = getCerts(host)
     tlsCallback(tlsSettings)
   else
     log.debug("Queuing up cert gen")
-    callback = (err)->
-      tlsCallback(getCerts(host))
-    job = (host)->
-      (worker) ->
-        generateCerts host, ->
-          worker.finish()
-    chain.add job(host), host, callback
+    generateCerts(host, tlsCallback)

@@ -7,10 +7,10 @@
   "author": "Mark Percival <mark@markpercival.us> (http://markpercival.us)",
   "repository": "git://github.com/mdp/middlefiddle",
   "dependencies": {
-    "underscore": ">=1.2.2"
-    , "colors": ">=0.5.1"
-    , "chain-gang": "1.0.0-beta4"
-    , "optimist": ">=0.3.0"
+    "underscore": "~>1.2.2"
+    , "colors": "~>0.6.0"
+    , "async": "~>0.2.7"
+    , "optimist": "~>0.4.0"
   },
   "scripts": {
     "postinstall": "./node_modules/coffee-script/bin/coffee -o lib/ src/"
