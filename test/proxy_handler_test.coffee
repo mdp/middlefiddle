@@ -3,7 +3,7 @@ assert = require 'assert'
 fakeServer = require './helpers/fake_server'
 http = require 'http'
 {proxyHandler} = require '../src/proxy_handler'
-fakePort = null; ProxyPort = 15888
+fakePort = null; ProxyPort = 15889
 request = require('request').defaults({proxy:"http://127.0.0.1:#{ProxyPort}"})
 
 describe 'A basic HTTP Proxy', ->
@@ -12,16 +12,24 @@ describe 'A basic HTTP Proxy', ->
     transform = (data, enc, done) ->
       @push data
       done()
-    req.transform new Mangle(transform)
-    res.transform new Mangle(transform)
+    res.transform new Mangle(null, transform)
     next()
   middlewares.push (req, res, next) ->
+    headers = (statusCode, headers) ->
+      console.log "called from #{@id}"
+      delete headers['content-length']
+      @emit 'writeHead', statusCode, headers
     transform = (data, enc, done) ->
-      @push data
+      unless @body
+        @body = ''
+      @body = @body + data.toString()
       done()
-    req.transform new Mangle(transform)
-    res.on 'response', (response) ->
-      res.transform new Mangle(transform)
+    flush = (done) ->
+      if @body
+        @push @body.replace('value', 'valueless')
+      done()
+    #req.transform new Mangle(null, transform, flush)
+    res.transform new Mangle(headers)
     next()
   before (done) ->
     http.createServer(proxyHandler(middlewares)).listen ProxyPort, ->
