@@ -21,7 +21,9 @@ app.start = (callback) ->
   if started
     callback(app)
   else
-    options = 
+    started = true
+    console.log "start server"
+    options =
       key: fs.readFileSync('test/fixtures/keys/ssl-key.private.pem'),
       cert: fs.readFileSync('test/fixtures/keys/ssl-cert.pem')
     http.createServer(app).listen fakePort, ->
