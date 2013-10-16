@@ -56,7 +56,6 @@ outbound = (req, res) ->
     res.emit 'response', uRes
     uRes.pipe(res.downstream)
     res.downstream.writeHead(uRes.statusCode, uRes.headers)
-    res.writeHead(res.)
 
 prepRequest = (req) ->
   if req.connection?.pair?.ssl
