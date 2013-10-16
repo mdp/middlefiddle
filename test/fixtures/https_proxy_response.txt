@@ -1,0 +1,21 @@
+HTTP/1.0 200 Connection established
+Proxy-agent: MiddleFiddle
+
+HTTP/1.1 301 Moved Permanently
+location: http://www.google.com/
+content-type: text/html; charset=UTF-8
+date: Mon, 22 Apr 2013 17:12:44 GMT
+expires: Wed, 22 May 2013 17:12:44 GMT
+cache-control: public, max-age=2592000
+server: gws
+content-length: 219
+x-xss-protection: 1; mode=block
+x-frame-options: SAMEORIGIN
+Connection: keep-alive
+
+<HTML><HEAD><meta http-equiv="content-type" content="text/html;charset=utf-8">
+<TITLE>301 Moved</TITLE></HEAD><BODY>
+<H1>301 Moved</H1>
+The document has moved
+<A HREF="http://www.google.com/">here</A>.
+</BODY></HTML>

@@ -3,7 +3,9 @@ url             = require 'url'
 _               = require('underscore')
 {Mangle}        = require "./mangle"
 log             = require "./logger"
-{request}       = require 'http'
+request =
+  'http:': require('http').request
+  'https:': require('https').request
 
 
 exports.proxyHandler = (middlewares) ->
@@ -29,7 +31,6 @@ proto =
     next()
 
 inbound = (req, res, next) ->
-  console.log "request inbound"
   res.downstream = res
   res.transform = (stream) ->
     stream.pipe(res.downstream)
@@ -40,17 +41,16 @@ inbound = (req, res, next) ->
   next()
 
 outbound = (req, res) ->
-  console.log "request outbound #{req.url}"
   prepRequest(req)
   destUrl = url.parse(req.url)
-  console.log destUrl
   options =
     port: destUrl.port
     hostname: destUrl.hostname
     path: destUrl.path
     headers: req.headers
     method: req.method
-  upstream = request options
+    rejectUnauthorized: false
+  upstream = request[destUrl.protocol] options
   req.upstream.pipe(upstream)
   upstream.on 'response', (uRes) ->
     res.emit 'response', uRes
@@ -59,11 +59,9 @@ outbound = (req, res) ->
 
 prepRequest = (req) ->
   if req.connection?.pair?.ssl
-    console.log "SSL"
     host = req.headers['host']
-    destUrl = url.parse("https://" + host + req.url)
-    console.log destUrl
+    destUrl = "https://" + host + req.url
     req.url = destUrl
   else
-    console.log "HTTP"
+    # Do nothing
 

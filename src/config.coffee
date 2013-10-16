@@ -1,10 +1,9 @@
 _ = require('underscore')
-path = require('path')
+fs = require('fs')
 homeDir = process.env['HOME']
 defaultMfDir = homeDir + "/.middlefiddle"
 mfDir = null
 log = require './logger'
-
 
 # Check first to see if we have a local .middlefiddle directory
 # If not, default to $HOME/.middlefiddle
@@ -14,7 +13,7 @@ mfPaths = [
 ]
 
 for mfPath in mfPaths
-  if path.existsSync(mfPath)
+  if fs.existsSync(mfPath)
     mfDir = mfPath
     break
 unless mfDir
@@ -30,9 +29,7 @@ catch error
 
 defaultConfig =
   mfDir: mfDir
-  httpPort: 8088
-  httpsPort: 8089
-  liveLoggerPort: 8411
+  port: 8088
 
 config = _.extend(defaultConfig, userConfig)
 module.exports = config
