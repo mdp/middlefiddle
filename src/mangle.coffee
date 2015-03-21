@@ -1,5 +1,5 @@
 {Transform}     = require "stream"
-class exports.Mangle extends Transform
+class exports.HttpMangle extends Transform
 
   constructor: (@writeHeadFn, @transformFn, @flushFn) ->
     @count = 0
@@ -9,7 +9,7 @@ class exports.Mangle extends Transform
       console.log "#{@id}: Listening to events from #{readStream.id}"
       readStream.on 'writeHead', =>
         console.log "Readstream #{readStream.id} emitted writeHead, #{@id} received"
-        @writeHead(arguments)
+        @writeHead.apply(this, arguments)
 
   writeHead: (statusCode, headers) ->
     if @writeHeadFn
